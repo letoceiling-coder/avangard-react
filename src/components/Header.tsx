@@ -140,12 +140,12 @@ const Header = () => {
             </div>
 
             {/* Navigation - Desktop (responsive) */}
-            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 xl:gap-1.5 ml-auto mr-1 lg:mr-2 xl:mr-4 flex-shrink min-w-0">
+            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 xl:gap-1.5 ml-auto mr-2 lg:mr-3 xl:mr-4 flex-shrink min-w-0 overflow-hidden">
               {mainNavLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative px-1.5 md:px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 text-[11px] md:text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap flex-shrink-0 ${
+                  className={`relative px-1 md:px-1.5 lg:px-2.5 xl:px-3 py-1.5 lg:py-2 text-[10px] md:text-[11px] lg:text-xs xl:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap flex-shrink-0 ${
                     isActive(link.path)
                       ? "text-primary bg-primary/5"
                       : "text-foreground hover:text-primary hover:bg-muted"
@@ -153,13 +153,13 @@ const Header = () => {
                 >
                   {link.label}
                   {isActive(link.path) && (
-                    <span className="absolute bottom-0 left-1.5 md:left-2 lg:left-3 xl:left-4 right-1.5 md:right-2 lg:right-3 xl:right-4 h-0.5 bg-primary rounded-full" />
+                    <span className="absolute bottom-0 left-1 md:left-1.5 lg:left-2.5 xl:left-3 right-1 md:right-1.5 lg:right-2.5 xl:right-3 h-0.5 bg-primary rounded-full" />
                   )}
                 </Link>
               ))}
               <Link
                 to="/about"
-                className={`relative px-1.5 md:px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 text-[11px] md:text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap flex-shrink-0 ${
+                className={`relative px-1 md:px-1.5 lg:px-2.5 xl:px-3 py-1.5 lg:py-2 text-[10px] md:text-[11px] lg:text-xs xl:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap flex-shrink-0 ${
                   isActive("/about")
                     ? "text-primary bg-primary/5"
                     : "text-foreground hover:text-primary hover:bg-muted"
@@ -170,13 +170,13 @@ const Header = () => {
             </nav>
 
             {/* Actions - Desktop (responsive) */}
-            <div className="hidden md:flex items-center gap-1.5 lg:gap-2 xl:gap-3 flex-shrink-0">
+            <div className="hidden md:flex items-center gap-0.5 lg:gap-1 xl:gap-1.5 flex-shrink-0">
               {/* Favorites with Badge */}
               <Link to="/favorites" className="relative">
-                <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
-                  <Heart className={`w-3 h-3 md:w-3.5 md:h-3.5 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
+                <Button variant="ghost" size="icon" className="relative h-8 w-8 md:h-9 md:w-9 lg:h-10 lg:w-10">
+                  <Heart className={`w-3 h-3 lg:w-3.5 lg:h-3.5 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
                   {favoritesCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[16px] md:min-w-[18px] h-[16px] md:h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] md:text-[10px] font-semibold px-0.5 md:px-1">
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[14px] md:min-w-[16px] lg:min-w-[18px] h-[14px] md:h-[16px] lg:h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[8px] md:text-[9px] lg:text-[10px] font-semibold px-0.5">
                       {favoritesCount > 99 ? "99+" : favoritesCount}
                     </span>
                   )}
@@ -190,14 +190,14 @@ const Header = () => {
                       variant="secondary"
                       size="sm"
                       leftIcon={
-                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="w-2 h-2 md:w-2.5 md:h-2.5 text-primary" />
+                        <div className="w-4 h-4 md:w-5 md:h-5 lg:w-6 lg:h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="w-1.5 h-1.5 md:w-2 md:h-2 lg:w-2.5 lg:h-2.5 text-primary" />
                         </div>
                       }
-                      rightIcon={<ChevronDown className="w-3 h-3 md:w-3.5 md:h-3.5" />}
-                      className="px-2 md:px-2.5 lg:px-3 text-xs md:text-sm h-9 md:h-10"
+                      rightIcon={<ChevronDown className="w-2.5 h-2.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5" />}
+                      className="px-1.5 md:px-2 lg:px-2.5 xl:px-3 text-[10px] md:text-xs lg:text-sm h-8 md:h-9 lg:h-10"
                     >
-                      <span className="max-w-[60px] md:max-w-[80px] lg:max-w-[100px] truncate">{user?.name}</span>
+                      <span className="max-w-[50px] md:max-w-[70px] lg:max-w-[90px] xl:max-w-[100px] truncate">{user?.name}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-52 bg-card border-border">
@@ -239,9 +239,9 @@ const Header = () => {
                 <Button 
                   variant="primary" 
                   size="sm" 
-                  leftIcon={<User className="w-3 h-3 md:w-3.5 md:h-3.5" />}
+                  leftIcon={<User className="w-2.5 h-2.5 md:w-3 md:h-3 lg:w-3.5 lg:h-3.5" />}
                   onClick={() => setAuthModalOpen(true)}
-                  className="px-2 md:px-2.5 lg:px-3 text-xs md:text-sm h-9 md:h-10"
+                  className="px-1.5 md:px-2 lg:px-2.5 xl:px-3 text-[10px] md:text-xs lg:text-sm h-8 md:h-9 lg:h-10"
                 >
                   Войти
                 </Button>
