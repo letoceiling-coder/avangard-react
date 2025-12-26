@@ -168,7 +168,7 @@ const Header = () => {
               {/* Favorites with Badge */}
               <Link to="/favorites" className="relative">
                 <Button variant="ghost" size="icon" className="relative">
-                  <Heart className={`w-5 h-5 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
+                  <Heart className={`w-3 h-3 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
                   {favoritesCount > 0 && (
                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold px-1">
                       {favoritesCount > 99 ? "99+" : favoritesCount}
@@ -185,10 +185,10 @@ const Header = () => {
                       size="sm"
                       leftIcon={
                         <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="w-3.5 h-3.5 text-primary" />
+                          <User className="w-2 h-2 text-primary" />
                         </div>
                       }
-                      rightIcon={<ChevronDown className="w-4 h-4" />}
+                      rightIcon={<ChevronDown className="w-3 h-3" />}
                     >
                       <span className="max-w-[100px] truncate">{user?.name}</span>
                     </Button>
@@ -232,7 +232,7 @@ const Header = () => {
                 <Button 
                   variant="primary" 
                   size="sm" 
-                  leftIcon={<User className="w-4 h-4" />}
+                  leftIcon={<User className="w-3 h-3" />}
                   onClick={() => setAuthModalOpen(true)}
                 >
                   Войти
