@@ -92,17 +92,27 @@ const Header = () => {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-auto min-w-[200px]">
-                  {regions.map((region) => (
-                    <DropdownMenuItem
-                      key={region.id}
-                      onClick={() => setSelectedRegion(region.id as "belgorod" | "kursk" | "voronezh")}
-                      className={selectedRegion === region.id ? "bg-primary/10 text-primary" : ""}
-                    >
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {region.name}
-                    </DropdownMenuItem>
-                  ))}
+                <DropdownMenuContent 
+                  align="start" 
+                  className="min-w-[160px] w-fit py-1 px-2 rounded-xl shadow-md bg-white border space-y-1 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 origin-top"
+                >
+                  {regions.map((region) => {
+                    const isSelected = selectedRegion === region.id;
+                    return (
+                      <DropdownMenuItem
+                        key={region.id}
+                        onClick={() => setSelectedRegion(region.id as "belgorod" | "kursk" | "voronezh")}
+                        className={`flex items-center gap-2 text-sm px-3 py-2 rounded-lg transition hover:bg-muted/10 cursor-pointer ${
+                          isSelected 
+                            ? "bg-primary text-white font-medium hover:bg-primary/90" 
+                            : ""
+                        }`}
+                      >
+                        <MapPin className={`w-4 h-4 ${isSelected ? "text-white" : "text-muted"}`} />
+                        {region.name}
+                      </DropdownMenuItem>
+                    );
+                  })}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

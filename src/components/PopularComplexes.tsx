@@ -269,7 +269,7 @@ const PopularComplexes = () => {
               Подборка жилых комплексов с актуальными предложениями от застройщиков
             </p>
           </div>
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="hidden lg:flex items-center gap-2">
             <Button
               variant="outline"
               size="icon"
@@ -289,19 +289,23 @@ const PopularComplexes = () => {
           </div>
         </div>
 
-        {/* Slider - more gap for airiness */}
+        {/* Grid Layout - Desktop */}
+        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {buildings.map((building, index) => (
+            <BuildingCard key={building.id} building={building} index={index} />
+          ))}
+        </div>
+
+        {/* Slider - Mobile */}
         <div
           ref={sliderRef}
-          className="flex gap-5 overflow-x-auto scrollbar-hide scroll-smooth pb-6 -mx-4 px-4 snap-x snap-mandatory"
+          className="sm:hidden flex gap-4 overflow-x-auto scrollbar-hide scroll-smooth pb-6 -mx-4 px-4 snap-x snap-mandatory"
           style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         >
           {buildings.map((building, index) => (
             <div
               key={building.id}
-              className="flex-shrink-0 w-[280px] sm:w-[300px] snap-start"
-              style={{ 
-                animationDelay: `${index * 50}ms`,
-              }}
+              className="flex-shrink-0 w-[280px] snap-start"
             >
               <BuildingCard building={building} index={index} />
             </div>

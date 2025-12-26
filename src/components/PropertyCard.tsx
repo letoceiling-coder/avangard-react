@@ -1,7 +1,6 @@
-import { Heart, MapPin, Maximize2, DoorOpen, Building2 } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
+import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useFavorites, Property } from "@/hooks/useFavorites";
-import { useComparison } from "@/hooks/useComparison";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
@@ -29,13 +28,8 @@ const formatRooms = (rooms: number) => {
 };
 
 const PropertyCard = ({ property, variant = "default", featured = false }: PropertyCardProps) => {
-  const navigate = useNavigate();
   const { isFavorite, toggleFavorite: toggleFavoriteHook } = useFavorites();
-  const { isInCompare, addToCompare, removeFromCompare, canAddMore } = useComparison();
   const favorite = isFavorite(property.id);
-  const inCompare = isInCompare(property.id);
-
-  const pricePerMeter = Math.round(property.price / property.area);
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -44,126 +38,76 @@ const PropertyCard = ({ property, variant = "default", featured = false }: Prope
     toast.success(favorite ? "Удалено из избранного" : "Добавлено в избранное");
   };
 
-  const toggleCompare = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (inCompare) {
-      removeFromCompare(property.id);
-      toast.success("Убрано из сравнения");
-    } else {
-      if (!canAddMore) {
-        toast.error("Можно сравнить максимум 3 объекта");
-        return;
-      }
-      addToCompare({
-        ...property,
-        pricePerMeter,
-      });
-      toast.success("Добавлено к сравнению");
-    }
-  };
-
   const status = property.status || (property.type === "Новостройка" ? "new" : "secondary");
   const statusInfo = statusConfig[status];
+
+  // Format details as inline text: "1-комн. · 31.9 м² · 6/12 этаж"
+  const detailsText = `${formatRooms(property.rooms)} · ${property.area} м² · ${property.floor} эт.`;
 
   return (
     <Link to={`/property/${property.id}`} className="block group h-full">
       <article 
-        className={cn(
-          "relative bg-white rounded-lg overflow-hidden border transition-all duration-300 ease-out hover:-translate-y-1 h-full flex flex-col",
-          featured 
-            ? "border-primary/30 ring-1 ring-primary/10 shadow-lg hover:shadow-xl" 
-            : "border-border/50 shadow-md hover:shadow-lg"
-        )}
+        className="relative bg-white rounded-xl shadow-sm overflow-hidden h-full flex flex-col hover:shadow-md transition-shadow duration-200"
       >
-        {/* Photo - 4:3 aspect ratio */}
-        <div className="relative aspect-[4/3] overflow-hidden bg-muted/30">
+        {/* Image - dominant, fixed height */}
+        <div className="relative w-full h-[180px] overflow-hidden">
           <img
             src={property.image}
             alt={property.title}
-            className="w-full h-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+            className="w-full h-full object-cover rounded-t-xl transition-transform duration-300 group-hover:scale-105"
           />
 
-          {/* Favorite Button ❤️ */}
+          {/* Small Status Badge - only if needed */}
+          {statusInfo && !featured && (
+            <div className="absolute top-2 left-2">
+              <span className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium",
+                statusInfo.className
+              )}>
+                {statusInfo.label}
+              </span>
+            </div>
+          )}
+
+          {/* Favorite Button - transparent background */}
           <button
             onClick={handleToggleFavorite}
-            className={cn(
-              "absolute top-2.5 right-2.5 min-h-[44px] min-w-[44px] w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 z-10",
-              favorite 
-                ? "bg-white shadow-sm" 
-                : "bg-white/70 backdrop-blur-sm hover:bg-white/90"
-            )}
+            className="absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center bg-transparent hover:bg-muted/10 transition-colors duration-200 z-10"
             aria-label={favorite ? "Удалить из избранного" : "Добавить в избранное"}
           >
             <Heart
               className={cn(
-                "w-3.5 h-3.5 transition-all duration-200",
+                "w-4 h-4 transition-colors",
                 favorite 
                   ? "fill-primary text-primary" 
-                  : "text-muted-foreground/50"
+                  : "text-white/80"
               )}
             />
           </button>
-
-          {/* Status Badge */}
-          <div className="absolute top-3 left-3">
-            <span className={cn(
-              "inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-medium backdrop-blur-sm shadow-sm",
-              featured 
-                ? "bg-primary text-white" 
-                : statusInfo.className
-            )}>
-              {featured ? "★ Рекомендуем" : statusInfo.label}
-            </span>
-          </div>
         </div>
 
-        {/* Content */}
-        <div className="p-4 flex-1 flex flex-col">
-          {/* Price - жирным text-xl */}
-          <div className="mb-3">
-            <p className="text-xl font-bold text-primary leading-none">
-              {property.price.toLocaleString("ru-RU")} ₽
-            </p>
-          </div>
-
-          {/* Parameters - иконками в строку */}
-          <div className="flex items-center gap-3 text-sm text-foreground/70 mb-3">
-            <span className="inline-flex items-center gap-1.5">
-              <DoorOpen className="w-4 h-4 text-primary/60" />
-              {formatRooms(property.rooms)}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Maximize2 className="w-4 h-4 text-primary/60" />
-              {property.area} м²
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Building2 className="w-4 h-4 text-primary/60" />
-              {property.floor} эт.
-            </span>
-          </div>
-
-          {/* Address - одной строкой */}
-          <p className="text-sm text-muted-foreground/70 truncate mb-4">
-            <MapPin className="w-3.5 h-3.5 inline mr-1.5 text-muted-foreground/50" />
-            {property.address}
-            {property.buildingName && <span className="text-muted-foreground/50"> · {property.buildingName}</span>}
+        {/* Content - compact spacing */}
+        <div className="flex flex-col gap-2 py-3 px-3 flex-1">
+          {/* Price - left-aligned */}
+          <p className="text-base font-semibold text-foreground leading-tight">
+            {property.price.toLocaleString("ru-RU")} ₽
           </p>
 
-          {/* CTA - "Оставить заявку" кнопка с bg-primary и rounded-xl внизу */}
-          <div className="mt-auto">
-            <button 
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                navigate(`/property/${property.id}`);
-              }}
-              className="w-full min-h-[44px] py-3 px-4 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
-              aria-label="Оставить заявку на объект"
-            >
-              Оставить заявку
-            </button>
-          </div>
+          {/* Title - left-aligned */}
+          <h3 className="text-base font-semibold text-foreground line-clamp-2 leading-tight">
+            {property.title}
+          </h3>
+
+          {/* Details - inline text, no icons */}
+          <p className="text-sm text-muted-foreground">
+            {detailsText}
+          </p>
+
+          {/* Address - single line, truncated */}
+          <p className="text-sm text-muted-foreground truncate">
+            {property.address}
+            {property.buildingName && <span> · {property.buildingName}</span>}
+          </p>
         </div>
       </article>
     </Link>

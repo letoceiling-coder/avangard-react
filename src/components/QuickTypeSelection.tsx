@@ -17,55 +17,47 @@ const QuickTypeSelection = () => {
   return (
     <section className="py-6 md:py-8 bg-background">
       <div className="container mx-auto px-4">
-        <div className="grid grid-cols-3 sm:grid-cols-6 gap-3 md:gap-4">
+1        <div className="flex flex-wrap justify-center gap-4 sm:gap-2">
           {propertyTypes.map((type) => {
             const isActive = activeType === type.id;
+            const IconComponent = type.icon;
             
             return (
               <Link
                 key={type.id}
                 to={`/catalog?type=${type.id}`}
+                aria-label={`Перейти к категории ${type.label}`}
                 className={`
-                  group flex flex-col items-center p-4 rounded-[16px] 
-                  transition-all duration-200 ease-out
+                  group w-[160px] h-[160px] sm:w-[140px] sm:h-[140px] 
+                  bg-white/50 border border-blue-200 rounded-2xl 
+                  flex flex-col justify-center items-center gap-1 
+                  shadow-sm hover:shadow-md hover:bg-white/80 
+                  transition-all duration-200 ease-in-out 
+                  cursor-pointer hover:scale-[1.03] active:scale-[0.98]
+                  focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2
                   ${isActive 
-                    ? "bg-primary/10 border-2 border-primary/30 shadow-[inset_0_2px_8px_rgba(59,130,246,0.1)]" 
-                    : "bg-surface border border-border/50 hover:border-primary/40 hover:bg-primary/5 hover:shadow-md"
+                    ? "bg-blue-50 border-blue-400 shadow-md" 
+                    : ""
                   }
                 `}
               >
-                <div 
+                <IconComponent 
                   className={`
-                    w-11 h-11 rounded-full flex items-center justify-center mb-2 
-                    transition-all duration-200 ease-out
-                    group-hover:scale-110
-                    ${isActive 
-                      ? "bg-primary/20" 
-                      : "bg-primary/8 group-hover:bg-primary/15"
-                    }
-                  `}
-                >
-                  <type.icon 
-                    className={`
-                      w-5 h-5 transition-colors duration-200
-                      ${isActive 
-                        ? "text-primary" 
-                        : "text-primary/70 group-hover:text-primary"
-                      }
-                    `} 
-                  />
-                </div>
-                <span 
-                  className={`
-                    text-sm font-medium text-center transition-colors duration-200
-                    ${isActive ? "text-primary" : "text-foreground/80 group-hover:text-foreground"}
-                  `}
-                >
+                    text-blue-400 group-hover:text-blue-500 
+                    transition duration-200 w-8 h-8
+                    ${isActive ? "text-blue-600" : ""}
+                  `} 
+                />
+                <p className={`
+                  text-sm sm:text-xs font-medium text-gray-700 
+                  group-hover:text-blue-600 transition-colors duration-200
+                  ${isActive ? "text-blue-600" : ""}
+                `}>
                   {type.label}
-                </span>
-                <span className="text-xs text-muted-foreground/60 mt-0.5 font-normal">
+                </p>
+                <p className="text-xs text-muted-foreground">
                   {type.count}
-                </span>
+                </p>
               </Link>
             );
           })}
