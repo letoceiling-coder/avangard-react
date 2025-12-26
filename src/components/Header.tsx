@@ -140,12 +140,12 @@ const Header = () => {
             </div>
 
             {/* Navigation - Desktop */}
-            <nav className="hidden lg:flex items-center gap-1 ml-auto mr-6">
+            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 ml-auto mr-2 lg:mr-6">
               {mainNavLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative px-4 py-2 text-sm font-medium transition-colors duration-normal rounded-lg ${
+                  className={`relative px-2 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap ${
                     isActive(link.path)
                       ? "text-primary bg-primary/5"
                       : "text-foreground hover:text-primary hover:bg-muted"
@@ -153,13 +153,13 @@ const Header = () => {
                 >
                   {link.label}
                   {isActive(link.path) && (
-                    <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-primary rounded-full" />
+                    <span className="absolute bottom-0 left-2 lg:left-4 right-2 lg:right-4 h-0.5 bg-primary rounded-full" />
                   )}
                 </Link>
               ))}
               <Link
                 to="/about"
-                className={`relative px-4 py-2 text-sm font-medium transition-colors duration-normal rounded-lg ${
+                className={`relative px-2 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap ${
                   isActive("/about")
                     ? "text-primary bg-primary/5"
                     : "text-foreground hover:text-primary hover:bg-muted"
