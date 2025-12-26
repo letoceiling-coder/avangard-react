@@ -198,7 +198,7 @@ const Index = () => {
           <div className="text-center animate-fade-in">
             {/* Main Heading - Confident, not oversized */}
             <h1 className="text-[28px] sm:text-[34px] md:text-[42px] lg:text-[48px] font-semibold text-white leading-[1.15] tracking-[-0.02em]">
-              Найдите свою недвижимость
+              Найди свою недвижимость
             </h1>
             
             {/* Subtitle - Lighter, clear connection to headline, 14px gap */}
