@@ -1,0 +1,323 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* LiveGrid Design System v2.0 - Tech & Trust */
+/* Based on market analysis: Clean, airy, no decorative noise */
+
+@layer base {
+  :root {
+    /* LiveGrid Brand Colors */
+    /* Primary: #4AB3FF (Sky Blue - kept per user preference) */
+    /* Text: #1E293B (Dark blue-gray for better readability) */
+    /* Secondary BG: #F1F5F9 (Light gray-blue) */
+    /* Success/Status: #10B981 (Green for "Available", "Price reduced") */
+    
+    --background: 210 40% 98%; /* #F8FAFC - slightly warmer than pure white */
+    --foreground: 215 25% 17%; /* #1E293B - dark blue-gray text */
+
+    --card: 0 0% 100%; /* Pure white cards */
+    --card-foreground: 215 25% 17%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 215 25% 17%;
+
+    /* Primary: Sky Blue #4AB3FF */
+    --primary: 205 100% 64%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 205 100% 70%;
+
+    /* Secondary: Slate background */
+    --secondary: 210 40% 96%; /* #F1F5F9 */
+    --secondary-foreground: 215 25% 17%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    /* Accent: Same as primary */
+    --accent: 205 100% 64%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Success/Status Green: #10B981 */
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    /* Warning/Booking: Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 205 100% 64%;
+
+    --radius: 12px;
+
+    /* Extended Tokens */
+    --surface: 0 0% 100%;
+    --dark-blue: 215 25% 17%; /* #1E293B */
+    --light-bg: 210 40% 96%; /* #F1F5F9 */
+    --gray-soft: 215 16% 47%;
+
+    /* Shadows - Soft, diffused (float effect) */
+    --shadow-card: 0 4px 20px rgba(0, 0, 0, 0.04);
+    --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-glow: 0 0 24px rgba(74, 179, 255, 0.25);
+    --shadow-elevated: 0 8px 30px rgba(0, 0, 0, 0.08);
+    --shadow-header: 0 1px 3px rgba(0, 0, 0, 0.05);
+
+    /* Transitions */
+    --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-smooth: 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .dark {
+    --background: 222 47% 8%;
+    --foreground: 210 40% 98%;
+
+    --card: 222 47% 11%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222 47% 11%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 205 100% 64%;
+    --primary-foreground: 222 47% 8%;
+    --primary-glow: 205 100% 70%;
+
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+
+    --accent: 205 100% 64%;
+    --accent-foreground: 222 47% 8%;
+
+    --success: 160 84% 39%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
+
+    --border: 217 33% 17%;
+    --input: 217 33% 17%;
+    --ring: 205 100% 64%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-semibold tracking-tight text-dark-blue;
+  }
+}
+
+@layer components {
+  /* ===== CARD SYSTEM ===== */
+  .lg-card {
+    @apply bg-card rounded-xl border border-border shadow-card transition-all duration-300;
+  }
+
+  .lg-card-hover {
+    @apply lg-card hover:shadow-card-hover hover:-translate-y-0.5;
+  }
+
+  .lg-card-glow {
+    @apply lg-card hover:shadow-glow hover:border-primary/30;
+  }
+
+  .lg-card-interactive {
+    @apply lg-card cursor-pointer hover:shadow-elevated hover:border-primary/20 hover:-translate-y-1 active:translate-y-0;
+  }
+
+  /* ===== BUTTON SYSTEM ===== */
+  /* Primary: Gradient blue with glow */
+  .lg-btn-primary {
+    @apply bg-primary text-primary-foreground font-semibold rounded-lg px-6 py-3 
+           transition-all duration-200 hover:bg-primary/90 hover:shadow-glow 
+           active:scale-[0.98] inline-flex items-center justify-center gap-2;
+  }
+
+  .lg-btn-primary-lg {
+    @apply lg-btn-primary px-8 py-4 text-base;
+  }
+
+  /* Secondary: White with outline */
+  .lg-btn-secondary {
+    @apply bg-card text-foreground border border-border font-medium rounded-lg px-6 py-3
+           transition-all duration-200 hover:border-primary hover:text-primary hover:bg-primary/5
+           inline-flex items-center justify-center gap-2;
+  }
+
+  .lg-btn-ghost {
+    @apply text-foreground font-medium rounded-lg px-4 py-2
+           transition-colors duration-200 hover:bg-muted hover:text-primary
+           inline-flex items-center justify-center gap-2;
+  }
+
+  /* ===== INPUT SYSTEM ===== */
+  .lg-input {
+    @apply w-full bg-card border border-border rounded-xl px-4 py-3
+           text-foreground placeholder:text-muted-foreground
+           focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary
+           transition-all duration-200;
+  }
+
+  .lg-input-search {
+    @apply w-full bg-transparent border-0 pl-12 pr-4 py-4 text-base
+           text-foreground placeholder:text-muted-foreground
+           focus:outline-none focus:ring-0 transition-all duration-200;
+  }
+
+  .lg-select {
+    @apply lg-input appearance-none cursor-pointer pr-10;
+  }
+
+  /* ===== TAG/CHIP SYSTEM ===== */
+  .lg-tag {
+    @apply inline-flex items-center px-4 py-2 rounded-full text-sm font-medium
+           bg-muted text-foreground border border-transparent
+           transition-all duration-200 hover:bg-primary hover:text-primary-foreground cursor-pointer;
+  }
+
+  .lg-tag-active {
+    @apply bg-primary text-primary-foreground border-primary shadow-sm;
+  }
+
+  .lg-chip {
+    @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+           bg-primary/10 text-primary;
+  }
+
+  .lg-chip-success {
+    @apply bg-success/10 text-success;
+  }
+
+  .lg-chip-warning {
+    @apply bg-warning/10 text-warning;
+  }
+
+  /* ===== SECTION STYLES ===== */
+  .lg-section {
+    @apply py-12 md:py-16 lg:py-20;
+  }
+
+  .lg-section-title {
+    @apply text-2xl md:text-3xl font-display font-bold text-dark-blue;
+  }
+
+  .lg-section-subtitle {
+    @apply text-base md:text-lg text-muted-foreground mt-2;
+  }
+
+  /* ===== SEARCH BOX (Hero) ===== */
+  .lg-search-box {
+    @apply bg-card rounded-2xl shadow-elevated border border-border/50 overflow-hidden;
+  }
+
+  .lg-search-tabs {
+    @apply flex border-b border-border;
+  }
+
+  .lg-search-tab {
+    @apply px-6 py-3 text-sm font-medium text-muted-foreground 
+           border-b-2 border-transparent transition-colors
+           hover:text-foreground;
+  }
+
+  .lg-search-tab-active {
+    @apply text-primary border-primary;
+  }
+
+  /* ===== STATUS BADGES ===== */
+  .lg-badge-available {
+    @apply inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium
+           bg-success/10 text-success;
+  }
+
+  .lg-badge-booked {
+    @apply inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium
+           bg-warning/10 text-warning;
+  }
+
+  .lg-badge-sold {
+    @apply inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium
+           bg-destructive/10 text-destructive;
+  }
+
+  /* ===== ADVANTAGE CARDS ===== */
+  .lg-advantage-card {
+    @apply bg-card rounded-2xl p-8 text-center border border-border shadow-card
+           transition-all duration-300 hover:shadow-elevated hover:border-primary/20 hover:-translate-y-1;
+  }
+
+  /* ===== STICKY PRICE BLOCK ===== */
+  .lg-sticky-block {
+    @apply bg-card rounded-2xl border border-border p-6 shadow-card sticky top-24;
+  }
+
+  /* ===== SPLIT VIEW (Catalog) ===== */
+  .lg-split-view {
+    @apply flex flex-col lg:flex-row gap-0;
+  }
+
+  .lg-split-list {
+    @apply w-full lg:w-[60%] overflow-y-auto;
+  }
+
+  .lg-split-map {
+    @apply hidden lg:block lg:w-[40%] lg:sticky lg:top-20 lg:h-[calc(100vh-5rem)];
+  }
+
+  /* ===== MOBILE BOTTOM SHEET ===== */
+  .lg-bottom-sheet {
+    @apply fixed inset-x-0 bottom-0 bg-card rounded-t-2xl shadow-elevated z-50
+           transform transition-transform duration-300 ease-out;
+  }
+
+  /* ===== ANIMATIONS ===== */
+  .animate-in {
+    animation: fade-in 0.4s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.5s ease-out;
+  }
+
+  /* ===== UTILITIES ===== */
+  .text-gradient {
+    @apply bg-gradient-to-r from-primary to-primary-glow bg-clip-text text-transparent;
+  }
+
+  .glow-primary {
+    @apply shadow-glow;
+  }
+
+  .glow-primary-hover {
+    @apply hover:shadow-glow transition-shadow duration-300;
+  }
+
+  /* Skeleton Loading */
+  .lg-skeleton {
+    @apply bg-gradient-to-r from-muted via-muted/50 to-muted bg-[length:200%_100%] animate-shimmer rounded-lg;
+  }
+
+  /* Scrollbar Hide */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
