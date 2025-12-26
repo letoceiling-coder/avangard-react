@@ -223,7 +223,8 @@ const ViewingRequestForm = ({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full h-12 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl"
+                className="w-full min-h-[44px] h-12 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl"
+                aria-label={isLoading ? "Отправка заявки" : "Отправить заявку на просмотр"}
               >
                 {isLoading ? (
                   <>

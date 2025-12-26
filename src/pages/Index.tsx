@@ -1,9 +1,10 @@
-import { useNavigate, Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import SearchWidget from "@/components/SearchWidget";
-import heroWinter from "@/assets/hero-bg-winter.png";
+import SearchCard from "@/components/SearchCard";
 import PropertyCard, { ExtendedProperty } from "@/components/PropertyCard";
+import { ArrowRight } from "lucide-react";
+import heroWinter from "@/assets/hero-bg-winter.png";
 import StatsBlock from "@/components/StatsBlock";
 import CTASocialBlock from "@/components/CTASocialBlock";
 import PopularComplexes from "@/components/PopularComplexes";
@@ -12,7 +13,6 @@ import SalesStarts from "@/components/SalesStarts";
 import MayLikeSection from "@/components/MayLikeSection";
 import NewsSlider from "@/components/NewsSlider";
 import HomeMapSection from "@/components/HomeMapSection";
-import { ArrowRight } from "lucide-react";
 
 const mockProperties: ExtendedProperty[] = [
   {
@@ -171,54 +171,53 @@ const mockProperties: ExtendedProperty[] = [
 
 const Index = () => {
   const navigate = useNavigate();
+
+  const handleStartSearch = () => {
+    navigate('/catalog');
+  };
+
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      {/* Hero Section - Clean, Premium, Viewport-Height Design */}
-      <section className="relative h-[calc(100vh-64px)] min-h-[560px] max-h-[720px] overflow-hidden flex items-center">
+      {/* Hero Background Section - Fits in one screen */}
+      <section className="relative w-full min-h-[calc(100vh-80px)] flex items-center overflow-hidden">
         {/* Background Image */}
         <img
           src={heroWinter}
           alt="Современный жилой район зимой"
-          className="absolute inset-0 w-full h-full object-cover object-center"
+          className="absolute inset-0 w-full h-full object-cover object-center scale-105 transition-transform duration-700 ease-out"
         />
         
-        {/* Gradient Overlay - Subtle dark, top to bottom */}
+        {/* Gradient Overlay - Enhanced */}
         <div 
           className="absolute inset-0"
           style={{ 
-            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.20) 0%, rgba(15, 23, 42, 0.35) 40%, rgba(15, 23, 42, 0.55) 100%)'
+            background: 'linear-gradient(135deg, rgba(15, 23, 42, 0.80) 0%, rgba(30, 58, 138, 0.70) 30%, rgba(15, 23, 42, 0.85) 70%, rgba(15, 23, 42, 0.92) 100%)'
           }}
         />
 
-        {/* Hero Content - Centered, tight vertical flow */}
-        <div className="container mx-auto px-4 relative z-10 flex flex-col items-center justify-center h-full -mt-8 md:-mt-12">
-          {/* Text Block - Higher position, clean hierarchy */}
-          <div className="text-center animate-fade-in">
-            {/* Main Heading - Confident, not oversized */}
-            <h1 className="text-[28px] sm:text-[34px] md:text-[42px] lg:text-[48px] font-semibold text-white leading-[1.15] tracking-[-0.02em]">
-              Найди свою недвижимость
-            </h1>
-            
-            {/* Subtitle - Lighter, clear connection to headline, 14px gap */}
-            <p className="mt-3 md:mt-[14px] text-[14px] md:text-[15px] lg:text-[16px] text-white/75 max-w-[420px] mx-auto leading-[1.55] font-normal">
-              Квартиры, дома и коммерция от застройщиков и агентств
-            </p>
-          </div>
+        {/* Hero Content - Enhanced layout */}
+        <div className="w-full px-4 sm:px-6 py-8 sm:py-12 relative z-10">
+          <div className="max-w-6xl mx-auto flex flex-col gap-6 sm:gap-8 animate-fade-in">
+            {/* Hero Text - Centered with better spacing */}
+            <div className="text-center space-y-3 sm:space-y-4">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white leading-tight tracking-tight">
+                Найдите свою недвижимость
+              </h1>
+              
+              <p className="text-sm sm:text-base text-white/90 max-w-2xl mx-auto leading-relaxed">
+                Квартиры, дома и коммерция от застройщиков и агентств
+              </p>
+            </div>
 
-          {/* Search Widget - Main focal point, 24px from subtitle */}
-          <div 
-            className="w-full max-w-[880px] mt-6 animate-fade-in"
-            style={{ animationDelay: "80ms" }}
-          >
-            <SearchWidget variant="hero" />
+            {/* SearchCard - Below title with smooth animation */}
+            <div className="animate-slide-up" style={{ animationDelay: '100ms' }}>
+              <SearchCard />
+            </div>
           </div>
         </div>
       </section>
-
-      {/* Minimal spacer */}
-      <div className="h-4 md:h-8 bg-background" />
 
       {/* Quick Type Selection */}
       <QuickTypeSelection />
@@ -226,18 +225,18 @@ const Index = () => {
       {/* Popular Complexes */}
       <PopularComplexes />
 
-      {/* Properties Section - Distinct styling */}
-      <section className="py-10 md:py-14 relative overflow-hidden">
+      {/* Properties Section - Enhanced */}
+      <section className="py-8 sm:py-12 relative overflow-hidden bg-gradient-to-b from-background to-background/95">
         {/* Subtle background gradient */}
         <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.04]" />
         
-        <div className="container mx-auto px-4 relative">
-          {/* Header with decorative element */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 md:mb-8">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <div className="w-8 h-1 bg-primary rounded-full" />
-                <span className="text-xs font-medium text-primary uppercase tracking-wider">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 relative">
+          {/* Header with decorative element - Enhanced */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <div className="w-10 h-1 bg-primary rounded-full" />
+                <span className="text-xs font-semibold text-primary uppercase tracking-wider">
                   Горячие предложения
                 </span>
               </div>
@@ -247,20 +246,23 @@ const Index = () => {
             </div>
             <Link 
               to="/catalog" 
-              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-all group self-start sm:self-auto"
             >
               Смотреть все
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
-          {/* Grid - 4 cols desktop, 2 tablet, 1 mobile */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {mockProperties.map((property, index) => (
+          {/* Grid - Enhanced: responsive grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+            {mockProperties.slice(0, 8).map((property, index) => (
               <div
                 key={property.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 30}ms` }}
+                className="animate-fade-in opacity-0"
+                style={{ 
+                  animationDelay: `${index * 50}ms`,
+                  animationFillMode: 'forwards'
+                }}
               >
                 <PropertyCard property={property} featured={index < 2} />
               </div>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -18,7 +18,6 @@ import {
   Ruler, DoorOpen, Bath, Sparkles, X
 } from "lucide-react";
 import PropertyCard from "@/components/PropertyCard";
-import YandexMap from "@/components/YandexMap";
 import ViewingRequestForm from "@/components/ViewingRequestForm";
 import { useFavorites } from "@/hooks/useFavorites";
 import { toast } from "sonner";
@@ -111,6 +110,9 @@ const PropertyDetail = () => {
   const [showAllPhotos, setShowAllPhotos] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
+  const galleryRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number>(0);
+  const touchEndX = useRef<number>(0);
   
   const favorite = isFavorite(mockProperty.id);
 
@@ -162,6 +164,37 @@ const PropertyDetail = () => {
     toast.success("Номер телефона: +7 (999) 123-45-67");
   };
 
+  const handleRequestClick = () => {
+    toast.success("Форма заявки открыта");
+  };
+
+  // Swipe handlers for mobile gallery
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 50;
+
+    if (distance > minSwipeDistance) {
+      // Swipe left - next image
+      nextImage();
+    } else if (distance < -minSwipeDistance) {
+      // Swipe right - previous image
+      prevImage();
+    }
+
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -204,7 +237,8 @@ const PropertyDetail = () => {
 
         {/* Gallery Section */}
         <div className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+          {/* Desktop Gallery Grid */}
+          <div className="hidden md:grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
             {/* Main Image */}
             <div 
               className="md:col-span-2 lg:col-span-2 lg:row-span-2 relative aspect-video lg:aspect-auto lg:h-[480px] rounded-2xl overflow-hidden group cursor-pointer shadow-md"
@@ -249,21 +283,65 @@ const PropertyDetail = () => {
             ))}
           </div>
 
-          {/* Mobile Gallery Scroll */}
-          <div className="md:hidden mt-3 -mx-4 px-4">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+          {/* Mobile Swipeable Gallery */}
+          <div 
+            ref={galleryRef}
+            className="md:hidden relative aspect-[4/3] rounded-2xl overflow-hidden bg-muted/30"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            <div 
+              className="flex transition-transform duration-300 ease-out h-full"
+              style={{ transform: `translateX(-${currentImageIndex * 100}%)` }}
+            >
               {mockProperty.images.map((image, index) => (
-                <button
-                  key={index}
-                  onClick={() => { setCurrentImageIndex(index); setShowAllPhotos(true); }}
-                  className={`flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden snap-start ${
-                    currentImageIndex === index ? "ring-2 ring-primary" : "opacity-70"
-                  }`}
-                >
-                  <img src={image} alt="" className="w-full h-full object-cover" />
-                </button>
+                <div key={index} className="min-w-full h-full relative">
+                  <img
+                    src={image}
+                    alt={`${mockProperty.title} ${index + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                  {/* Image Counter */}
+                  <div className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm px-3 py-1.5 rounded-full text-white text-sm font-medium">
+                    {index + 1} / {mockProperty.images.length}
+                  </div>
+                </div>
               ))}
             </div>
+            
+            {/* Navigation Dots */}
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+              {mockProperty.images.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all ${
+                    currentImageIndex === index 
+                      ? "bg-white w-6" 
+                      : "bg-white/50 hover:bg-white/75"
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Swipe Navigation Arrows */}
+            {mockProperty.images.length > 1 && (
+              <>
+                <button
+                  onClick={prevImage}
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                >
+                  <ChevronLeft className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={nextImage}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/70 transition-colors"
+                >
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </>
+            )}
           </div>
 
           {/* View All Button */}
@@ -388,26 +466,27 @@ const PropertyDetail = () => {
               )}
             </div>
 
-            {/* Characteristics */}
+            {/* Parameters Block - с иконками и grid */}
             <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
-              <h2 className="text-xl font-display font-semibold mb-6">Характеристики</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <h2 className="text-xl font-display font-semibold mb-6">Параметры</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {[
-                  { label: "Материал стен", value: mockProperty.material, icon: Building2 },
+                  { label: "Площадь", value: `${mockProperty.area} м²`, icon: Maximize2 },
+                  { label: "Комнат", value: mockProperty.rooms, icon: DoorOpen },
+                  { label: "Этаж", value: `${mockProperty.floor}/${mockProperty.totalFloors}`, icon: Building2 },
+                  { label: "Высота потолков", value: `${mockProperty.ceilingHeight} м`, icon: Ruler },
                   { label: "Год постройки", value: mockProperty.year, icon: Calendar },
+                  { label: "Материал", value: mockProperty.material, icon: Building2 },
                   { label: "Санузел", value: mockProperty.bathroom, icon: Bath },
-                  { label: "Балкон/Лоджия", value: mockProperty.balcony, icon: DoorOpen },
-                  { label: "Площадь", value: `${mockProperty.area} м²`, icon: Ruler },
+                  { label: "Балкон", value: mockProperty.balcony, icon: DoorOpen },
                   { label: "Отделка", value: mockProperty.finishing, icon: Sparkles },
                 ].map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <item.icon className="w-4 h-4 text-primary" />
-                      </div>
-                      <span className="text-muted-foreground">{item.label}</span>
+                  <div key={index} className="flex flex-col items-center p-4 rounded-xl bg-muted/30 border border-border/50">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3">
+                      <item.icon className="w-6 h-6 text-primary" />
                     </div>
-                    <span className="font-medium text-foreground">{item.value}</span>
+                    <span className="text-xs text-muted-foreground text-center mb-1">{item.label}</span>
+                    <span className="font-semibold text-foreground text-center">{item.value}</span>
                   </div>
                 ))}
               </div>
@@ -449,7 +528,7 @@ const PropertyDetail = () => {
               </div>
             </div>
 
-            {/* Map */}
+            {/* Map Placeholder */}
             <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-display font-semibold">Расположение на карте</h2>
@@ -463,12 +542,28 @@ const PropertyDetail = () => {
                   <ChevronRight className="w-4 h-4" />
                 </a>
               </div>
-              <YandexMap 
-                address={mockProperty.address}
-                coordinates={mockProperty.coordinates}
-                zoom={16}
-                className="h-80 rounded-xl"
-              />
+              {/* Map Placeholder */}
+              <div className="relative h-80 rounded-xl overflow-hidden bg-gradient-to-br from-sky-50 via-blue-50 to-slate-100 border border-border/50">
+                {/* Grid pattern */}
+                <div 
+                  className="absolute inset-0 opacity-20"
+                  style={{
+                    backgroundImage: `
+                      linear-gradient(rgba(100, 150, 200, 0.1) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(100, 150, 200, 0.1) 1px, transparent 1px)
+                    `,
+                    backgroundSize: '40px 40px'
+                  }}
+                />
+                {/* Map Pin Icon */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <MapPin className="w-16 h-16 text-primary/40 mx-auto mb-3" />
+                    <p className="text-sm text-muted-foreground font-medium">Карта</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">{mockProperty.address}</p>
+                  </div>
+                </div>
+              </div>
               <p className="mt-3 text-sm text-muted-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-primary" />
                 {mockProperty.address}, {mockProperty.district}
@@ -523,6 +618,8 @@ const PropertyDetail = () => {
                   fullWidth
                   leftIcon={<Phone className="w-5 h-5" />}
                   onClick={handlePhoneClick}
+                  className="min-h-[44px]"
+                  aria-label="Показать номер телефона агента"
                 >
                   Показать номер
                 </Button>
@@ -587,28 +684,26 @@ const PropertyDetail = () => {
         </section>
       </main>
 
-      {/* Mobile Sticky CTA */}
-      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background border-t border-border p-4 z-40 shadow-lg">
+      {/* Mobile Sticky Bottom Bar */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-white border-t border-border/50 p-4 z-50 shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
         <div className="flex items-center gap-3">
-          <div className="flex-1">
-            <p className="text-lg font-bold text-foreground">{formatPrice(mockProperty.price)}</p>
-            <p className="text-xs text-muted-foreground">{mockProperty.pricePerMeter.toLocaleString("ru-RU")} ₽/м²</p>
-          </div>
           <Button
             variant="ghost"
             size="icon"
-            className={`flex-shrink-0 ${favorite ? "text-primary" : ""}`}
+            className={`flex-shrink-0 min-h-[44px] min-w-[44px] w-12 h-12 rounded-xl ${favorite ? "text-primary bg-primary/10" : "text-muted-foreground"}`}
             onClick={toggleFavorite}
+            aria-label={favorite ? "Удалить из избранного" : "Добавить в избранное"}
           >
-            <Heart className={`w-5 h-5 ${favorite ? "fill-primary" : ""}`} />
+            <Heart className={`w-6 h-6 ${favorite ? "fill-primary text-primary" : ""}`} />
           </Button>
           <Button
             variant="primary"
-            size="md"
-            leftIcon={<Phone className="w-4 h-4" />}
-            onClick={handlePhoneClick}
+            size="lg"
+            className="flex-1 min-h-[44px] h-12 rounded-xl font-semibold text-base"
+            onClick={handleRequestClick}
+            aria-label="Оставить заявку на просмотр объекта"
           >
-            Позвонить
+            Оставить заявку
           </Button>
         </div>
       </div>

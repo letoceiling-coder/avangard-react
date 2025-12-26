@@ -122,6 +122,8 @@ const SmartCTAButtons = ({
           size="icon"
           onClick={handleShare}
           title="Поделиться"
+          aria-label="Поделиться объектом"
+          className="min-h-[44px] min-w-[44px]"
         >
           <Share2 className="w-4 h-4" />
         </Button>
@@ -131,8 +133,9 @@ const SmartCTAButtons = ({
           variant="outline"
           size={showFavoriteCount ? "md" : "icon"}
           onClick={handleFavoriteToggle}
-          className={`gap-2 ${isFavorite(property.id) ? "text-destructive border-destructive hover:bg-destructive/10" : ""}`}
-          title="В избранное"
+          className={`min-h-[44px] ${showFavoriteCount ? "" : "min-w-[44px]"} gap-2 ${isFavorite(property.id) ? "text-destructive border-destructive hover:bg-destructive/10" : ""}`}
+          title={isFavorite(property.id) ? "Удалить из избранного" : "Добавить в избранное"}
+          aria-label={isFavorite(property.id) ? "Удалить из избранного" : "Добавить в избранное"}
         >
           <Heart className={`w-4 h-4 ${isFavorite(property.id) ? "fill-current" : ""}`} />
           {showFavoriteCount && favoriteCount > 0 && (

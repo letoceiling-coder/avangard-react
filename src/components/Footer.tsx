@@ -39,8 +39,8 @@ const Footer = () => {
   return (
     <footer className="bg-[#0A2342] border-t border-white/10 mt-0">
       {/* Main Footer Content */}
-      <div className="container mx-auto px-4 py-10 md:py-14">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6 sm:gap-8">
           {/* Brand & Company Info */}
           <div className="sm:col-span-2 lg:col-span-2">
             <LiveGridLogo size="lg" variant="dark" className="mb-4" />

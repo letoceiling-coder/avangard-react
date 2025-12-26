@@ -270,7 +270,8 @@ const BookingFormModal = ({
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full"
+                className="w-full min-h-[44px]"
+                aria-label={isLoading ? "Отправка заявки на просмотр" : "Подтвердить запись на просмотр"}
               >
                 {isLoading ? (
                   <>

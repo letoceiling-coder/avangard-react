@@ -24,10 +24,10 @@ const buttonVariants = cva(
           "text-primary underline-offset-4 hover:underline hover:opacity-90",
       },
       size: {
-        sm: "h-9 px-3 py-2 text-xs rounded-sm [&_svg]:size-3",
-        md: "h-11 px-4 py-2 text-sm rounded-md [&_svg]:size-4",
-        lg: "h-12 px-6 py-3 text-base rounded-md [&_svg]:size-5",
-        icon: "h-10 w-10 rounded-md [&_svg]:size-3",
+        sm: "min-h-[44px] h-9 px-3 py-2 text-xs rounded-sm [&_svg]:size-3",
+        md: "min-h-[44px] h-11 px-4 py-2 text-sm rounded-md [&_svg]:size-4",
+        lg: "min-h-[44px] h-12 px-6 py-3 text-base rounded-md [&_svg]:size-5",
+        icon: "min-h-[44px] min-w-[44px] h-10 w-10 rounded-md [&_svg]:size-4",
       },
       fullWidth: {
         true: "w-full",

@@ -12,7 +12,8 @@ import {
   Ruler,
   Calendar,
   Trees,
-  DoorOpen
+  DoorOpen,
+  DollarSign
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 
-type SearchTab = "buy" | "sell";
+type SearchTab = "buy" | "rent";
 
 interface SearchWidgetProps {
   className?: string;
@@ -32,8 +33,8 @@ interface SearchWidgetProps {
 }
 
 const searchTabs: { id: SearchTab; label: string }[] = [
-  { id: "buy", label: "Купить" },
-  { id: "sell", label: "Продать" },
+  { id: "buy", label: "Покупка" },
+  { id: "rent", label: "Аренда" },
 ];
 
 const propertyTypes = [
@@ -92,7 +93,7 @@ const SearchWidget = ({ className, variant = "default" }: SearchWidgetProps) => 
     if (areaRange[1] < 200) params.set("maxArea", areaRange[1].toString());
     if (yearRange[0] > 2015) params.set("minYear", yearRange[0].toString());
     if (yearRange[1] < 2025) params.set("maxYear", yearRange[1].toString());
-    params.set("deal", activeTab);
+    params.set("deal", activeTab === "buy" ? "buy" : "rent");
     navigate(`/catalog?${params.toString()}`);
   };
 
@@ -117,37 +118,33 @@ const SearchWidget = ({ className, variant = "default" }: SearchWidgetProps) => 
 
   return (
     <div 
-      className={`w-full backdrop-blur-sm ${className}`}
-      style={{ 
+      className={`w-full ${isHero ? '' : 'backdrop-blur-sm'} ${className}`}
+      style={!isHero ? { 
         background: 'linear-gradient(180deg, #FFFFFF 0%, #F9FBFF 100%)',
-        boxShadow: isHero 
-          ? '0 20px 40px rgba(10, 35, 66, 0.08), 0 4px 12px rgba(10, 35, 66, 0.06)' 
-          : '0 2px 16px rgba(0, 0, 0, 0.05)',
+        boxShadow: '0 2px 16px rgba(0, 0, 0, 0.05)',
         borderRadius: '24px'
-      }}
+      } : {}}
     >
-      <div className="p-4 md:p-5">
-        {/* Row 1: Tabs - Compact segmented control */}
-        <div className="flex items-center mb-4">
-          <div className="inline-flex p-0.5 bg-muted/50 rounded-full">
-            {searchTabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`px-4 py-1.5 rounded-full text-[13px] font-medium transition-all duration-200 ${
-                  activeTab === tab.id
-                    ? "bg-primary text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+      <div className={isHero ? 'p-0' : 'p-4 md:p-5'}>
+        {/* Row 1: Tabs - Покупка / Аренда */}
+        <div className="flex justify-start gap-2 mb-4">
+          {searchTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`rounded-full px-4 py-2 text-[13px] font-medium transition-colors duration-200 ${
+                activeTab === tab.id
+                  ? "bg-primary text-white"
+                  : "bg-muted/20 text-muted-foreground hover:bg-muted/30"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
 
-        {/* Row 2: Property Type Selector - Compact toggle, not stretched */}
-        <div className="flex gap-0.5 mb-4 overflow-x-auto pb-0.5 scrollbar-hide">
+        {/* Row 2: Property Type Selector - Scrollable row */}
+        <div className="flex gap-2 mb-4 overflow-x-auto scrollbar-hide scroll-smooth" style={{ scrollSnapType: 'x mandatory' }}>
           {propertyTypes.map((type) => {
             const Icon = type.icon;
             const isActive = selectedPropertyType === type.id;
@@ -155,87 +152,87 @@ const SearchWidget = ({ className, variant = "default" }: SearchWidgetProps) => 
               <button
                 key={type.id}
                 onClick={() => setSelectedPropertyType(type.id)}
-                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${
+                className={`rounded-full border px-4 py-2 flex items-center gap-2 whitespace-nowrap flex-shrink-0 transition-all duration-200 ${
                   isActive
-                    ? "bg-primary/15 text-primary shadow-sm"
-                    : "text-muted-foreground"
+                    ? "bg-primary text-white border-primary"
+                    : "bg-transparent text-muted-foreground border-border hover:border-primary/50"
                 }`}
-                style={{
-                  backgroundColor: isActive ? undefined : 'transparent',
-                }}
-                onMouseEnter={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'rgba(74,179,255,0.08)';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (!isActive) {
-                    e.currentTarget.style.backgroundColor = 'transparent';
-                  }
-                }}
+                style={{ scrollSnapAlign: 'start' }}
               >
                 <Icon 
-                  className={`w-3.5 h-3.5 transition-colors duration-200 ${isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground'}`} 
-                  strokeWidth={isActive ? 1.75 : 1.5} 
+                  className={`w-4 h-4 transition-colors duration-200 ${isActive ? 'text-white' : 'text-muted-foreground'}`} 
+                  strokeWidth={isActive ? 2 : 1.5} 
                 />
-                <span className={isActive ? 'font-semibold' : ''}>{type.label}</span>
+                <span className={`text-sm font-medium ${isActive ? 'text-white' : 'text-muted-foreground'}`}>{type.label}</span>
               </button>
             );
           })}
         </div>
 
-        {/* Row 3: Main Filters - Desktop */}
-        <div className="hidden md:flex items-center gap-2">
-          {/* Address Input - Visually dominant, main anchor */}
-          <div className="flex-1 relative min-w-0">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-              <Search className="w-[18px] h-[18px] text-muted-foreground/50" strokeWidth={1.5} />
+        {/* Row 3: Main Filters - Desktop: одна строка */}
+        <div className="hidden md:flex items-center gap-3">
+          {/* Address Input Card */}
+          <div className="flex-1 min-w-[280px] relative">
+            <div className="bg-white rounded-xl shadow-sm border border-border/50 p-1">
+              <div className="relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  <Search className="w-[18px] h-[18px] text-muted-foreground/60" strokeWidth={1.5} />
+                </div>
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Адрес, ЖК, район..."
+                  className="w-full h-[50px] pl-10 pr-4 rounded-lg bg-transparent text-[15px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
+                />
+              </div>
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Адрес, ЖК, район..."
-              className="w-full h-[50px] pl-10 pr-4 rounded-xl bg-muted/30 text-[15px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
-            />
           </div>
 
-          {/* Price From */}
-          <input
-            type="text"
-            value={priceMin}
-            onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ""))}
-            placeholder="Цена от"
-            className="w-[110px] h-[48px] px-3.5 rounded-xl bg-muted/30 text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
-          />
+          {/* Price From Card */}
+          <div className="min-w-[140px] relative">
+            <div className="bg-white rounded-xl shadow-sm border border-border/50 p-1">
+              <div className="relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  <DollarSign className="w-[18px] h-[18px] text-muted-foreground/60" strokeWidth={1.5} />
+                </div>
+                <input
+                  type="text"
+                  value={priceMin}
+                  onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Цена от"
+                  className="w-full h-[48px] pl-10 pr-3.5 rounded-lg bg-transparent text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
+                />
+              </div>
+            </div>
+          </div>
 
-          {/* Price To */}
-          <input
-            type="text"
-            value={priceMax}
-            onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ""))}
-            placeholder="Цена до"
-            className="w-[110px] h-[48px] px-3.5 rounded-xl bg-muted/30 text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
-          />
+          {/* Price To Card */}
+          <div className="min-w-[140px] relative">
+            <div className="bg-white rounded-xl shadow-sm border border-border/50 p-1">
+              <div className="relative">
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                  <DollarSign className="w-[18px] h-[18px] text-muted-foreground/60" strokeWidth={1.5} />
+                </div>
+                <input
+                  type="text"
+                  value={priceMax}
+                  onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ""))}
+                  placeholder="Цена до"
+                  className="w-full h-[48px] pl-10 pr-3.5 rounded-lg bg-transparent text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
+                />
+              </div>
+            </div>
+          </div>
 
-          {/* Extended Filters Button - Compact, secondary */}
+          {/* Extended Filters Button - "Ещё" */}
           <Dialog open={extendedFiltersOpen} onOpenChange={setExtendedFiltersOpen}>
             <DialogTrigger asChild>
               <button
-                className={`inline-flex items-center justify-center gap-1.5 h-[48px] px-3.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
-                  hasExtendedFilters
-                    ? "bg-primary/12 text-primary"
-                    : "bg-muted/30 text-muted-foreground hover:bg-muted/45 hover:text-foreground"
-                }`}
+                className="rounded-md border px-4 py-2 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
               >
-                <SlidersHorizontal className="w-4 h-4" strokeWidth={1.5} />
-                <span>Ещё</span>
-                {hasExtendedFilters && (
-                  <span className="flex items-center justify-center w-4.5 h-4.5 rounded-full bg-primary text-white text-[10px] font-semibold ml-0.5">
-                    {activeFiltersCount}
-                  </span>
-                )}
+                Ещё
               </button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
@@ -415,81 +412,100 @@ const SearchWidget = ({ className, variant = "default" }: SearchWidgetProps) => 
             </DialogContent>
           </Dialog>
 
-          {/* Primary CTA Button - Visually dominant, main action */}
-          <Button
+          {/* Primary CTA Button - Справа от фильтров */}
+          <button
             onClick={handleSearch}
-            variant="primary"
-            className="h-[52px] px-8 rounded-xl text-[15px] font-semibold shadow-[0_2px_12px_rgba(93,169,233,0.35)] hover:shadow-[0_4px_16px_rgba(93,169,233,0.45)] hover:brightness-[0.97] active:scale-[0.98] transition-all duration-200"
+            className="bg-primary text-white rounded-xl px-6 py-3 text-base font-semibold shadow-sm hover:bg-primary/90 transition-colors min-h-[44px] whitespace-nowrap"
+            aria-label="Найти недвижимость по заданным параметрам"
           >
             Найти
-          </Button>
+          </button>
         </div>
 
-        {/* Mobile Layout - Vertical, fits first screen */}
-        <div className="md:hidden space-y-2.5">
-          {/* Search Input - Primary, on top */}
-          <div className="relative">
-            <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none">
-              <Search className="w-[18px] h-[18px] text-muted-foreground/50" strokeWidth={1.5} />
+        {/* Mobile Layout - Vertical: инпуты в столбик */}
+        <div className="md:hidden space-y-3">
+          {/* Inputs Container - Vertical column */}
+          <div className="flex flex-col gap-3">
+            {/* Address Input Card */}
+            <div className="w-full relative">
+              <div className="bg-white rounded-xl shadow-sm border border-border/50 p-1">
+                <div className="relative">
+                  <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                    <Search className="w-[18px] h-[18px] text-muted-foreground/60" strokeWidth={1.5} />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Адрес, ЖК, район..."
+                    className="w-full h-[48px] pl-10 pr-4 rounded-lg bg-transparent text-[15px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
+                  />
+                </div>
+              </div>
             </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onKeyDown={handleKeyDown}
-              placeholder="Адрес, ЖК, район..."
-              className="w-full h-[48px] pl-10 pr-4 rounded-xl bg-muted/30 text-[15px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
-            />
-          </div>
 
-          {/* Price Row - Stacked */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={priceMin}
-              onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ""))}
-              placeholder="Цена от"
-              className="flex-1 h-[44px] px-3.5 rounded-xl bg-muted/30 text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
-            />
-            <input
-              type="text"
-              value={priceMax}
-              onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ""))}
-              placeholder="Цена до"
-              className="flex-1 h-[44px] px-3.5 rounded-xl bg-muted/30 text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:bg-white focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
-            />
+            {/* Price Inputs Row */}
+            <div className="flex gap-3">
+              {/* Price From Card */}
+              <div className="flex-1 relative">
+                <div className="bg-white rounded-xl shadow-sm border border-border/50 p-1">
+                  <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                      <DollarSign className="w-[18px] h-[18px] text-muted-foreground/60" strokeWidth={1.5} />
+                    </div>
+                    <input
+                      type="text"
+                      value={priceMin}
+                      onChange={(e) => setPriceMin(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Цена от"
+                      className="w-full h-[48px] pl-10 pr-3.5 rounded-lg bg-transparent text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Price To Card */}
+              <div className="flex-1 relative">
+                <div className="bg-white rounded-xl shadow-sm border border-border/50 p-1">
+                  <div className="relative">
+                    <div className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none z-10">
+                      <DollarSign className="w-[18px] h-[18px] text-muted-foreground/60" strokeWidth={1.5} />
+                    </div>
+                    <input
+                      type="text"
+                      value={priceMax}
+                      onChange={(e) => setPriceMax(e.target.value.replace(/\D/g, ""))}
+                      placeholder="Цена до"
+                      className="w-full h-[48px] pl-10 pr-3.5 rounded-lg bg-transparent text-[14px] placeholder:text-muted-foreground/55 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary/20 border border-transparent focus:border-primary/25"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Filters + CTA Row */}
-          <div className="flex gap-2 pt-0.5">
+          <div className="flex gap-2">
+            {/* Extended Filters Button - "Ещё" */}
             <Dialog open={extendedFiltersOpen} onOpenChange={setExtendedFiltersOpen}>
               <DialogTrigger asChild>
                 <button
-                  className={`flex-shrink-0 inline-flex items-center justify-center gap-1.5 h-[48px] px-3.5 rounded-xl text-[13px] font-medium transition-all duration-200 ${
-                    hasExtendedFilters
-                      ? "bg-primary/12 text-primary"
-                      : "bg-muted/30 text-muted-foreground"
-                  }`}
+                  className="rounded-md border px-4 py-2 text-sm text-muted-foreground hover:bg-muted/50 transition-colors"
                 >
-                  <SlidersHorizontal className="w-4 h-4" strokeWidth={1.5} />
                   Ещё
-                  {hasExtendedFilters && (
-                    <span className="flex items-center justify-center w-4.5 h-4.5 rounded-full bg-primary text-white text-[10px] font-semibold">
-                      {activeFiltersCount}
-                    </span>
-                  )}
                 </button>
               </DialogTrigger>
             </Dialog>
 
-            {/* Primary CTA Button - Full width, dominant */}
-            <Button
+            {/* Primary CTA Button - Full width на мобильном */}
+            <button
               onClick={handleSearch}
-              variant="primary"
-              className="flex-1 h-[48px] rounded-xl text-[15px] font-semibold shadow-[0_2px_12px_rgba(93,169,233,0.35)]"
+              className="w-full bg-primary text-white rounded-xl px-6 py-3 text-base font-semibold shadow-sm hover:bg-primary/90 transition-colors min-h-[44px]"
+              aria-label="Найти недвижимость по заданным параметрам"
             >
               Найти
-            </Button>
+            </button>
           </div>
         </div>
       </div>

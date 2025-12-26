@@ -8,7 +8,9 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "commit": "node scripts/auto-commit.js",
+    "commit:push": "node scripts/auto-commit.js && git push origin $(git rev-parse --abbrev-ref HEAD)"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

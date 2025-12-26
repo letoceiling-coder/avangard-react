@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
+import * as React from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -8,19 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Slider } from "@/components/ui/slider";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
   Grid3x3,
   List,
@@ -34,6 +28,8 @@ import {
   Home,
   Building2,
   Eye,
+  DoorOpen,
+  CheckCircle2,
 } from "lucide-react";
 
 // Extended mock data with coordinates
@@ -214,24 +210,24 @@ const allProperties: (ExtendedProperty & { lat: number; lng: number })[] = [
 ];
 
 const regions = [
-  { value: "belgorod", label: "Белгород" },
-  { value: "kursk", label: "Курск" },
-  { value: "voronezh", label: "Воронеж" },
+  { value: "belgorod", label: "Белгород", icon: MapPin },
+  { value: "kursk", label: "Курск", icon: MapPin },
+  { value: "voronezh", label: "Воронеж", icon: MapPin },
 ];
 
 const propertyTypes = [
-  { value: "all", label: "Все типы" },
-  { value: "apartment", label: "Квартиры" },
-  { value: "room", label: "Комнаты" },
-  { value: "house", label: "Дома" },
-  { value: "commercial", label: "Коммерция" },
+  { value: "all", label: "Все типы", icon: Building2 },
+  { value: "apartment", label: "Квартиры", icon: Home },
+  { value: "room", label: "Комнаты", icon: DoorOpen },
+  { value: "house", label: "Дома", icon: Home },
+  { value: "commercial", label: "Коммерция", icon: Building2 },
 ];
 
 const statusOptions = [
-  { value: "all", label: "Любой статус" },
-  { value: "new", label: "Новостройка" },
-  { value: "secondary", label: "Вторичка" },
-  { value: "verified", label: "Проверено" },
+  { value: "all", label: "Любой статус", icon: CheckCircle2 },
+  { value: "new", label: "Новостройка", icon: CheckCircle2 },
+  { value: "secondary", label: "Вторичка", icon: CheckCircle2 },
+  { value: "verified", label: "Проверено", icon: CheckCircle2 },
 ];
 
 const roomOptions = ["Студия", "1", "2", "3", "4+"];
@@ -285,49 +281,79 @@ const FilterPanel = ({
 
   return (
     <div className="space-y-6">
-      {/* Region */}
+      {/* Region - Chips */}
       <div>
-        <label className="text-sm font-medium text-title mb-2 block">Регион</label>
-        <Select value={filters.region} onValueChange={(v) => updateFilter("region", v)}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-card border-border z-50">
-            {regions.map((r) => (
-              <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <label className="text-sm font-medium text-title mb-3 block">Регион</label>
+        <div className="flex flex-wrap gap-2">
+          {regions.map((r) => {
+            const Icon = r.icon;
+            const isActive = filters.region === r.value;
+            return (
+              <button
+                key={r.value}
+                onClick={() => updateFilter("region", r.value)}
+                className={`inline-flex items-center gap-2 p-3 rounded-xl border transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white text-foreground border-border hover:border-primary/50 hover:bg-primary/5 active:bg-primary/10"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-muted-foreground"}`} />
+                <span className="text-sm font-medium">{r.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Type */}
+      {/* Type - Chips */}
       <div>
-        <label className="text-sm font-medium text-title mb-2 block">Тип недвижимости</label>
-        <Select value={filters.type} onValueChange={(v) => updateFilter("type", v)}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-card border-border z-50">
-            {propertyTypes.map((t) => (
-              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <label className="text-sm font-medium text-title mb-3 block">Тип недвижимости</label>
+        <div className="flex flex-wrap gap-2">
+          {propertyTypes.map((t) => {
+            const Icon = t.icon;
+            const isActive = filters.type === t.value;
+            return (
+              <button
+                key={t.value}
+                onClick={() => updateFilter("type", t.value)}
+                className={`inline-flex items-center gap-2 p-3 rounded-xl border transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white text-foreground border-border hover:border-primary/50 hover:bg-primary/5 active:bg-primary/10"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-muted-foreground"}`} />
+                <span className="text-sm font-medium">{t.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Status */}
+      {/* Status - Chips */}
       <div>
-        <label className="text-sm font-medium text-title mb-2 block">Статус</label>
-        <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="bg-card border-border z-50">
-            {statusOptions.map((s) => (
-              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <label className="text-sm font-medium text-title mb-3 block">Статус</label>
+        <div className="flex flex-wrap gap-2">
+          {statusOptions.map((s) => {
+            const Icon = s.icon;
+            const isActive = filters.status === s.value;
+            return (
+              <button
+                key={s.value}
+                onClick={() => updateFilter("status", s.value)}
+                className={`inline-flex items-center gap-2 p-3 rounded-xl border transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white text-foreground border-border hover:border-primary/50 hover:bg-primary/5 active:bg-primary/10"
+                }`}
+              >
+                <Icon className={`w-4 h-4 ${isActive ? "text-white" : "text-muted-foreground"}`} />
+                <span className="text-sm font-medium">{s.label}</span>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Price Range */}
@@ -365,23 +391,27 @@ const FilterPanel = ({
         </div>
       </div>
 
-      {/* Rooms */}
+      {/* Rooms - Chips */}
       <div>
         <label className="text-sm font-medium text-title mb-3 block">Комнаты</label>
         <div className="flex flex-wrap gap-2">
-          {roomOptions.map((room) => (
-            <button
-              key={room}
-              onClick={() => toggleRoom(room)}
-              className={`px-3 py-2 rounded-input text-sm font-medium transition-all border ${
-                filters.rooms.includes(room)
-                  ? "bg-primary text-white border-primary"
-                  : "bg-surface text-title border-border hover:border-primary"
-              }`}
-            >
-              {room === "Студия" ? room : `${room}`}
-            </button>
-          ))}
+          {roomOptions.map((room) => {
+            const isActive = filters.rooms.includes(room);
+            return (
+              <button
+                key={room}
+                onClick={() => toggleRoom(room)}
+                className={`inline-flex items-center gap-2 p-3 rounded-xl border transition-all duration-200 ${
+                  isActive
+                    ? "bg-primary text-white border-primary shadow-sm"
+                    : "bg-white text-foreground border-border hover:border-primary/50 hover:bg-primary/5 active:bg-primary/10"
+                }`}
+              >
+                <DoorOpen className={`w-4 h-4 ${isActive ? "text-white" : "text-muted-foreground"}`} />
+                <span className="text-sm font-medium">{room === "Студия" ? room : `${room}`}</span>
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -394,8 +424,8 @@ const FilterPanel = ({
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="pt-4 border-t border-border space-y-3">
+      {/* Actions - Only for desktop */}
+      <div className="hidden md:block pt-4 border-t border-border space-y-3">
         <Button variant="primary" className="w-full">
           Применить фильтры
         </Button>
@@ -492,6 +522,49 @@ const Catalog = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   
+  // Swipe-to-close handlers for bottom sheet
+  const bottomSheetRef = useRef<HTMLDivElement>(null);
+  const touchStartY = useRef<number>(0);
+  const touchCurrentY = useRef<number>(0);
+  const [dragOffset, setDragOffset] = useState(0);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    // Only handle swipe on the handle or when content is at top
+    const target = e.currentTarget as HTMLElement;
+    const isHandle = target.closest('[data-swipe-handle]');
+    const contentArea = target.closest('[data-content-area]') as HTMLElement;
+    
+    if (isHandle || (contentArea && contentArea.scrollTop === 0)) {
+      touchStartY.current = e.touches[0].clientY;
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (touchStartY.current === 0) return;
+    
+    touchCurrentY.current = e.touches[0].clientY;
+    const deltaY = touchCurrentY.current - touchStartY.current;
+    
+    // Only allow downward swipe
+    if (deltaY > 0) {
+      e.preventDefault();
+      setDragOffset(deltaY);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    const threshold = 100; // Minimum swipe distance to close
+    
+    if (dragOffset > threshold) {
+      setMobileFilterOpen(false);
+    }
+    
+    // Reset
+    setDragOffset(0);
+    touchStartY.current = 0;
+    touchCurrentY.current = 0;
+  };
+  
   const itemsPerPage = 12;
   const totalPages = Math.ceil(allProperties.length / itemsPerPage);
 
@@ -560,11 +633,11 @@ const Catalog = () => {
         {/* Main Content */}
         <main className="flex-1 flex flex-col min-w-0">
           {/* Top Bar */}
-          <div className="sticky top-16 z-30 bg-card border-b border-border px-4 py-3">
+          <div className="sticky top-16 z-30 bg-card border-b border-border px-4 sm:px-6 py-3">
             <div className="flex items-center justify-between gap-3">
               {/* Mobile Filter Button */}
-              <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
-                <SheetTrigger asChild>
+              <Dialog open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+                <DialogTrigger asChild>
                   <Button variant="outline" className="md:hidden relative">
                     <SlidersHorizontal className="w-4 h-4 mr-2" />
                     Фильтры
@@ -574,19 +647,71 @@ const Catalog = () => {
                       </span>
                     )}
                   </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto">
-                  <SheetHeader className="mb-5">
-                    <SheetTitle>Фильтры</SheetTitle>
-                  </SheetHeader>
-                  <FilterPanel
-                    filters={filters}
-                    setFilters={setFilters}
-                    onReset={resetFilters}
-                    activeCount={activeFilterCount}
-                  />
-                </SheetContent>
-              </Sheet>
+                </DialogTrigger>
+                <DialogContent 
+                  className="md:hidden !fixed bottom-0 left-0 right-0 !top-auto !translate-x-0 !translate-y-0 max-h-[85vh] rounded-t-2xl rounded-b-none p-0 gap-0 overflow-hidden flex flex-col data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom"
+                  onInteractOutside={(e) => e.preventDefault()}
+                  style={{
+                    transform: dragOffset > 0 ? `translateY(${dragOffset}px)` : undefined,
+                    transition: dragOffset === 0 ? 'transform 0.2s ease-out' : 'none',
+                  }}
+                >
+                  {/* Swipe Handle - для swipe-to-close */}
+                  <div 
+                    ref={bottomSheetRef}
+                    data-swipe-handle
+                    className="w-full pt-3 pb-2 flex justify-center touch-none cursor-grab active:cursor-grabbing"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <div className="w-12 h-1.5 bg-muted-foreground/30 rounded-full" />
+                  </div>
+
+                  {/* Header */}
+                  <DialogHeader className="px-6 pb-4 border-b border-border flex-shrink-0">
+                    <div className="flex items-center justify-between">
+                      <DialogTitle className="text-xl font-semibold">Фильтры</DialogTitle>
+                      {activeFilterCount > 0 && (
+                        <button
+                          onClick={resetFilters}
+                          className="text-sm text-primary hover:underline"
+                        >
+                          Сбросить ({activeFilterCount})
+                        </button>
+                      )}
+                    </div>
+                  </DialogHeader>
+
+                  {/* Filter Content - Scrollable */}
+                  <div 
+                    data-content-area
+                    className="overflow-y-auto flex-1 px-6 py-4 min-h-0"
+                    onTouchStart={handleTouchStart}
+                    onTouchMove={handleTouchMove}
+                    onTouchEnd={handleTouchEnd}
+                  >
+                    <FilterPanel
+                      filters={filters}
+                      setFilters={setFilters}
+                      onReset={resetFilters}
+                      activeCount={activeFilterCount}
+                    />
+                  </div>
+
+                  {/* Footer with Confirm Button */}
+                  <div className="px-6 py-4 border-t border-border bg-background flex-shrink-0">
+                    <Button
+                      variant="primary"
+                      size="lg"
+                      className="w-full rounded-xl font-semibold"
+                      onClick={() => setMobileFilterOpen(false)}
+                    >
+                      Применить фильтры
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {/* Results Count */}
               <div className="hidden md:block">
@@ -650,16 +775,16 @@ const Catalog = () => {
                     </p>
                   </div>
 
-                  {/* Grid View */}
+                  {/* Grid View - Mobile-first layout: одна карточка на строку, spacing-4 */}
                   {viewMode === "grid" && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                       {paginatedProperties.map((property) => (
                         <div
                           key={property.id}
                           id={`property-${property.id}`}
                           onMouseEnter={() => setHoveredPropertyId(property.id)}
                           onMouseLeave={() => setHoveredPropertyId(null)}
-                          className={highlightedPropertyId === property.id ? "ring-2 ring-primary rounded-card" : ""}
+                          className={highlightedPropertyId === property.id ? "ring-2 ring-primary rounded-lg" : ""}
                         >
                           <PropertyCard property={property} />
                         </div>

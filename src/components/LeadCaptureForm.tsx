@@ -192,7 +192,8 @@ const LeadCaptureForm = ({
           <Button
             type="submit"
             disabled={!agreed || isLoading}
-            className="w-full"
+            className="w-full min-h-[44px]"
+            aria-label={isLoading ? "Отправка формы" : buttonText}
           >
             {isLoading ? (
               <>
