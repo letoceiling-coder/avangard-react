@@ -32,7 +32,10 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             cd ~/trendagent.siteaccess.ru/public_html/avangard-react
-            git pull origin main || echo "Git pull completed"
+            # Сбрасываем локальные изменения и получаем последнюю версию
+            git reset --hard HEAD
+            git clean -fd
+            git pull origin main
             npm ci
             npm run build
             # Очищаем старые файлы перед копированием
