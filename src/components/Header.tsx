@@ -112,26 +112,26 @@ const Header = () => {
                     {selectedRegion}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56 bg-card border-border">
+                <DropdownMenuContent align="start" className="w-auto min-w-[220px] bg-card border-border">
                   <div className="flex flex-col gap-1">
                     {regions.map((region) => (
                       <button
                         key={region.id}
                         onClick={() => handleRegionChange(region.name)}
-                        className={`flex items-center gap-1.5 px-2 py-1.5 text-sm rounded-sm transition-colors w-full text-left ${
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-sm transition-colors w-full text-left whitespace-nowrap ${
                           selectedRegion === region.name
-                            ? "bg-primary/10 text-primary"
+                            ? "bg-primary/10 text-primary font-medium"
                             : "text-foreground hover:bg-muted"
                         }`}
                       >
-                        <MapPin className="w-3 h-3" />
-                        <span>{region.name}</span>
+                        <MapPin className="w-3 h-3 flex-shrink-0" />
+                        <span className="truncate">{region.name}</span>
                       </button>
                     ))}
                   </div>
                   <DropdownMenuSeparator className="my-1" />
-                  <DropdownMenuItem asChild>
-                    <Link to="/region-select" className="cursor-pointer">
+                  <DropdownMenuItem asChild className="text-xs">
+                    <Link to="/region-select" className="cursor-pointer whitespace-nowrap">
                       Все регионы
                     </Link>
                   </DropdownMenuItem>
