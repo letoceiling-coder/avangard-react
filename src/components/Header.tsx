@@ -91,25 +91,25 @@ const Header = () => {
   return (
     <>
       <header className="fixed top-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-md border-b border-border shadow-sm">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16 md:h-[72px]">
+        <div className="container mx-auto px-3 sm:px-4">
+          <div className="flex items-center justify-between h-16 md:h-[72px] gap-2">
             {/* Logo */}
             <Link to="/" className="flex-shrink-0">
               <LiveGridLogo size="md" />
             </Link>
 
-            {/* Region Selector - Desktop */}
-            <div className="hidden lg:flex items-center ml-6">
+            {/* Region Selector - Desktop (only on xl+ screens) */}
+            <div className="hidden xl:flex items-center ml-2 2xl:ml-4 flex-shrink-0">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button
                     variant="ghost"
                     size="sm"
-                    leftIcon={<MapPin className="w-4 h-4 text-primary" />}
-                    rightIcon={<ChevronDown className="w-4 h-4 text-muted-foreground" />}
-                    className="text-foreground"
+                    leftIcon={<MapPin className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-primary" />}
+                    rightIcon={<ChevronDown className="w-3.5 h-3.5 xl:w-4 xl:h-4 text-muted-foreground" />}
+                    className="text-foreground text-xs xl:text-sm px-2 xl:px-3"
                   >
-                    {selectedRegion}
+                    <span className="max-w-[120px] xl:max-w-none truncate">{selectedRegion}</span>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="start" className="w-auto min-w-[220px] bg-card border-border">
@@ -139,13 +139,13 @@ const Header = () => {
               </DropdownMenu>
             </div>
 
-            {/* Navigation - Desktop */}
-            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 ml-auto mr-2 lg:mr-6">
+            {/* Navigation - Desktop (responsive) */}
+            <nav className="hidden md:flex items-center gap-0.5 lg:gap-1 xl:gap-1.5 ml-auto mr-1 lg:mr-2 xl:mr-4 flex-shrink min-w-0">
               {mainNavLinks.map((link) => (
                 <Link
                   key={link.path}
                   to={link.path}
-                  className={`relative px-2 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap ${
+                  className={`relative px-1.5 md:px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 text-[11px] md:text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap flex-shrink-0 ${
                     isActive(link.path)
                       ? "text-primary bg-primary/5"
                       : "text-foreground hover:text-primary hover:bg-muted"
@@ -153,13 +153,13 @@ const Header = () => {
                 >
                   {link.label}
                   {isActive(link.path) && (
-                    <span className="absolute bottom-0 left-2 lg:left-4 right-2 lg:right-4 h-0.5 bg-primary rounded-full" />
+                    <span className="absolute bottom-0 left-1.5 md:left-2 lg:left-3 xl:left-4 right-1.5 md:right-2 lg:right-3 xl:right-4 h-0.5 bg-primary rounded-full" />
                   )}
                 </Link>
               ))}
               <Link
                 to="/about"
-                className={`relative px-2 lg:px-4 py-1.5 lg:py-2 text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap ${
+                className={`relative px-1.5 md:px-2 lg:px-3 xl:px-4 py-1.5 lg:py-2 text-[11px] md:text-xs lg:text-sm font-medium transition-colors duration-normal rounded-lg whitespace-nowrap flex-shrink-0 ${
                   isActive("/about")
                     ? "text-primary bg-primary/5"
                     : "text-foreground hover:text-primary hover:bg-muted"
@@ -169,14 +169,14 @@ const Header = () => {
               </Link>
             </nav>
 
-            {/* Actions - Desktop */}
-            <div className="hidden md:flex items-center gap-3">
+            {/* Actions - Desktop (responsive) */}
+            <div className="hidden md:flex items-center gap-1.5 lg:gap-2 xl:gap-3 flex-shrink-0">
               {/* Favorites with Badge */}
               <Link to="/favorites" className="relative">
-                <Button variant="ghost" size="icon" className="relative">
-                  <Heart className={`w-3 h-3 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
+                <Button variant="ghost" size="icon" className="relative h-9 w-9 md:h-10 md:w-10">
+                  <Heart className={`w-3 h-3 md:w-3.5 md:h-3.5 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
                   {favoritesCount > 0 && (
-                    <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold px-1">
+                    <span className="absolute -top-1 -right-1 min-w-[16px] md:min-w-[18px] h-[16px] md:h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[9px] md:text-[10px] font-semibold px-0.5 md:px-1">
                       {favoritesCount > 99 ? "99+" : favoritesCount}
                     </span>
                   )}
@@ -190,13 +190,14 @@ const Header = () => {
                       variant="secondary"
                       size="sm"
                       leftIcon={
-                        <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center">
-                          <User className="w-2 h-2 text-primary" />
+                        <div className="w-5 h-5 md:w-6 md:h-6 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="w-2 h-2 md:w-2.5 md:h-2.5 text-primary" />
                         </div>
                       }
-                      rightIcon={<ChevronDown className="w-3 h-3" />}
+                      rightIcon={<ChevronDown className="w-3 h-3 md:w-3.5 md:h-3.5" />}
+                      className="px-2 md:px-2.5 lg:px-3 text-xs md:text-sm h-9 md:h-10"
                     >
-                      <span className="max-w-[100px] truncate">{user?.name}</span>
+                      <span className="max-w-[60px] md:max-w-[80px] lg:max-w-[100px] truncate">{user?.name}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-52 bg-card border-border">
@@ -238,8 +239,9 @@ const Header = () => {
                 <Button 
                   variant="primary" 
                   size="sm" 
-                  leftIcon={<User className="w-3 h-3" />}
+                  leftIcon={<User className="w-3 h-3 md:w-3.5 md:h-3.5" />}
                   onClick={() => setAuthModalOpen(true)}
+                  className="px-2 md:px-2.5 lg:px-3 text-xs md:text-sm h-9 md:h-10"
                 >
                   Войти
                 </Button>
