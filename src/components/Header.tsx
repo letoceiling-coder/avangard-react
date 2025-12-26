@@ -245,7 +245,7 @@ const Header = () => {
               {/* Favorites with Badge - Mobile */}
               <Link to="/favorites" className="relative">
                 <Button variant="ghost" size="icon">
-                  <Heart className={`w-5 h-5 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
+                  <Heart className={`w-3 h-3 ${favoritesCount > 0 ? "fill-primary text-primary" : ""}`} />
                   {favoritesCount > 0 && (
                     <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold px-1">
                       {favoritesCount > 99 ? "99+" : favoritesCount}
