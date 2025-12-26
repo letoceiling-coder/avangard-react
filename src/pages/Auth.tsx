@@ -170,6 +170,10 @@ const Auth = () => {
                         toast.error("Введите email для восстановления пароля");
                         return;
                       }
+                      if (!supabase) {
+                        toast.error("Supabase не настроен");
+                        return;
+                      }
                       const { error } = await supabase.auth.resetPasswordForEmail(email, {
                         redirectTo: `${window.location.origin}/auth`,
                       });

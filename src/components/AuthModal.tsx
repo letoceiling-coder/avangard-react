@@ -241,6 +241,10 @@ const AuthModal = ({ isOpen, onClose, defaultMode = "login" }: AuthModalProps) =
                       toast.error("Введите email для восстановления пароля");
                       return;
                     }
+                    if (!supabase) {
+                      toast.error("Supabase не настроен");
+                      return;
+                    }
                     const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
                       redirectTo: `${window.location.origin}/auth`,
                     });

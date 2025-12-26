@@ -61,6 +61,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Fetch user profile from database
   const fetchProfile = async (userId: string) => {
+    if (!supabase) return null;
+    
     const { data, error } = await supabase
       .from('profiles')
       .select('*')
@@ -86,6 +88,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   useEffect(() => {
+    if (!supabase) {
+      setIsLoading(false);
+      return;
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -136,6 +143,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: "Supabase не настроен. Пожалуйста, настройте переменные окружения." };
+    }
+    
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email: email.toLowerCase().trim(),
@@ -160,6 +171,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const register = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
+    if (!supabase) {
+      return { success: false, error: "Supabase не настроен. Пожалуйста, настройте переменные окружения." };
+    }
+    
     try {
       const redirectUrl = `${window.location.origin}/`;
       
@@ -192,13 +207,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
-    await supabase.auth.signOut();
+    if (supabase) {
+      await supabase.auth.signOut();
+    }
     setUser(null);
     setSession(null);
   };
 
   const updateProfile = async (data: Partial<User>) => {
-    if (!user) return;
+    if (!user || !supabase) return;
 
     const { error } = await supabase
       .from('profiles')
