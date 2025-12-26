@@ -35,6 +35,8 @@ jobs:
             git pull origin main || echo "Git pull completed"
             npm ci
             npm run build
+            # Очищаем старые файлы перед копированием
+            rm -rf ../assets/*
             cp -r dist/. ..
             echo "Deployment completed successfully"
 
