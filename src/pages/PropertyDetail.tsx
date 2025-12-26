@@ -4,9 +4,18 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { 
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from "@/components/ui/breadcrumb";
+import { 
   Heart, Phone, MapPin, Maximize2, Home, Calendar, 
   ChevronLeft, ChevronRight, CreditCard, Building2, 
-  Car, Shield, Trees, ArrowLeft, Share2, Check
+  Car, Shield, Trees, Share2, Check, Copy, MessageCircle,
+  Ruler, DoorOpen, Bath, Sparkles, X
 } from "lucide-react";
 import PropertyCard from "@/components/PropertyCard";
 import YandexMap from "@/components/YandexMap";
@@ -26,18 +35,23 @@ const mockProperty = {
     "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=1200&h=800&fit=crop",
     "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=1200&h=800&fit=crop",
     "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200&h=800&fit=crop",
+    "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=1200&h=800&fit=crop",
   ],
   area: 85,
   rooms: 3,
   floor: 12,
   totalFloors: 25,
+  ceilingHeight: 3.2,
   address: "ул. Победы, 89, Белгород",
   district: "Центральный район",
   type: "Новостройка",
   year: 2024,
   readiness: "Сдан",
   finishing: "Чистовая",
-  description: "Премиальная квартира в современном жилом комплексе «Белый город». Панорамное остекление, высокие потолки 3.2 м, чистовая отделка. Развитая инфраструктура, подземная парковка, детские площадки. Рядом парк, школа, торговый центр. Квартира готова к проживанию.",
+  material: "Монолит-кирпич",
+  bathroom: "Раздельный",
+  balcony: "2 лоджии",
+  description: "Премиальная квартира в современном жилом комплексе «Белый город». Панорамное остекление, высокие потолки 3.2 м, чистовая отделка. Развитая инфраструктура, подземная парковка, детские площадки. Рядом парк, школа, торговый центр. Квартира готова к проживанию. Отличная планировка с просторной кухней-гостиной и изолированными спальнями. Вид на благоустроенный двор.",
   features: [
     "Панорамное остекление",
     "Высокие потолки 3.2 м",
@@ -49,7 +63,9 @@ const mockProperty = {
     "Закрытая территория",
   ],
   complex: "ЖК «Белый город»",
+  complexId: "beliy-gorod",
   developer: "Строительная компания «Новый Дом»",
+  developerId: "noviy-dom",
   coordinates: [50.5997, 36.5873] as [number, number],
 };
 
@@ -93,9 +109,21 @@ const PropertyDetail = () => {
   const { id } = useParams();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showAllPhotos, setShowAllPhotos] = useState(false);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const { isFavorite, addToFavorites, removeFromFavorites } = useFavorites();
   
   const favorite = isFavorite(mockProperty.id);
+
+  const formatPrice = (price: number) => {
+    return price.toLocaleString("ru-RU") + " ₽";
+  };
+
+  const calculateMortgage = (price: number, rate = 3, years = 20) => {
+    const monthlyRate = rate / 100 / 12;
+    const months = years * 12;
+    const payment = price * (monthlyRate * Math.pow(1 + monthlyRate, months)) / (Math.pow(1 + monthlyRate, months) - 1);
+    return Math.round(payment);
+  };
 
   const toggleFavorite = () => {
     if (favorite) {
@@ -130,66 +158,76 @@ const PropertyDetail = () => {
     setCurrentImageIndex((prev) => (prev - 1 + mockProperty.images.length) % mockProperty.images.length);
   };
 
+  const handlePhoneClick = () => {
+    toast.success("Номер телефона: +7 (999) 123-45-67");
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      <main className="container mx-auto px-4 py-6 md:py-8">
-        {/* Breadcrumb & Actions */}
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Link 
-              to="/catalog" 
-              className="flex items-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              <span className="hidden sm:inline">Назад в каталог</span>
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              className="rounded-full border-border hover:border-primary hover:text-primary"
-              onClick={handleShare}
-            >
-              <Share2 className="w-4 h-4" />
-            </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className={`rounded-full ${
-                favorite 
-                  ? "border-primary text-primary bg-primary/5" 
-                  : "border-border hover:border-primary hover:text-primary"
-              }`}
-              onClick={toggleFavorite}
-            >
-              <Heart className={`w-4 h-4 ${favorite ? "fill-primary" : ""}`} />
-            </Button>
-          </div>
-        </div>
+      <main className="container mx-auto px-4 py-6 md:py-8 pb-24 lg:pb-8">
+        {/* Breadcrumbs */}
+        <Breadcrumb className="mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="text-muted-foreground hover:text-primary transition-colors">
+                  Главная
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/catalog" className="text-muted-foreground hover:text-primary transition-colors">
+                  Новостройки
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to={`/complex/${mockProperty.complexId}`} className="text-muted-foreground hover:text-primary transition-colors">
+                  {mockProperty.complex}
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-foreground font-medium truncate max-w-[200px]">
+                {mockProperty.title}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
 
-        {/* Photo Gallery */}
+        {/* Gallery Section */}
         <div className="mb-8">
-          {/* Main Gallery Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3 rounded-2xl overflow-hidden">
-            {/* Main Large Image */}
-            <div className="lg:col-span-2 lg:row-span-2 relative aspect-[4/3] lg:aspect-auto lg:h-[480px] group cursor-pointer">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            {/* Main Image */}
+            <div 
+              className="md:col-span-2 lg:col-span-2 lg:row-span-2 relative aspect-video lg:aspect-auto lg:h-[480px] rounded-2xl overflow-hidden group cursor-pointer shadow-md"
+              onClick={() => { setCurrentImageIndex(0); setShowAllPhotos(true); }}
+            >
               <img
                 src={mockProperty.images[0]}
                 alt={mockProperty.title}
-                className="w-full h-full object-cover"
-                onClick={() => { setCurrentImageIndex(0); setShowAllPhotos(true); }}
+                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              
+              {/* Price Badge */}
+              <div className="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-xl shadow-lg">
+                <span className="text-lg font-bold text-foreground">{formatPrice(mockProperty.price)}</span>
+              </div>
             </div>
 
-            {/* Side Images */}
+            {/* Thumbnail Images */}
             {mockProperty.images.slice(1, 5).map((image, index) => (
               <div 
                 key={index} 
-                className={`hidden lg:block relative aspect-[4/3] lg:h-[234px] group cursor-pointer ${
+                className={`hidden md:block relative aspect-video lg:h-[234px] rounded-2xl overflow-hidden group cursor-pointer shadow-sm ${
                   index === 3 ? "relative" : ""
                 }`}
                 onClick={() => { setCurrentImageIndex(index + 1); setShowAllPhotos(true); }}
@@ -197,27 +235,28 @@ const PropertyDetail = () => {
                 <img
                   src={image}
                   alt={`${mockProperty.title} ${index + 2}`}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 
+                {/* Show More Overlay */}
                 {index === 3 && mockProperty.images.length > 5 && (
-                  <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                    <span className="text-white font-semibold">+{mockProperty.images.length - 5} фото</span>
+                  <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                    <span className="text-white font-semibold text-lg">+{mockProperty.images.length - 5} фото</span>
                   </div>
                 )}
               </div>
             ))}
           </div>
 
-          {/* Mobile Gallery Navigation */}
-          <div className="lg:hidden mt-3">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {/* Mobile Gallery Scroll */}
+          <div className="md:hidden mt-3 -mx-4 px-4">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
               {mockProperty.images.map((image, index) => (
                 <button
                   key={index}
-                  onClick={() => setCurrentImageIndex(index)}
-                  className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden ${
+                  onClick={() => { setCurrentImageIndex(index); setShowAllPhotos(true); }}
+                  className={`flex-shrink-0 w-20 h-14 rounded-lg overflow-hidden snap-start ${
                     currentImageIndex === index ? "ring-2 ring-primary" : "opacity-70"
                   }`}
                 >
@@ -227,12 +266,13 @@ const PropertyDetail = () => {
             </div>
           </div>
 
-          {/* View All Photos Button */}
+          {/* View All Button */}
           <button 
             onClick={() => setShowAllPhotos(true)}
-            className="mt-4 text-primary font-medium hover:underline flex items-center gap-2"
+            className="mt-4 text-primary font-medium hover:underline flex items-center gap-2 transition-colors"
           >
-            Смотреть все {mockProperty.images.length} фото
+            <Maximize2 className="w-4 h-4" />
+            Показать все ({mockProperty.images.length})
           </button>
         </div>
 
@@ -241,9 +281,9 @@ const PropertyDetail = () => {
           <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
             <button
               onClick={() => setShowAllPhotos(false)}
-              className="absolute top-4 right-4 text-white/80 hover:text-white z-10"
+              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors z-10"
             >
-              <span className="text-2xl">✕</span>
+              <X className="w-6 h-6" />
             </button>
             
             <button
@@ -256,7 +296,7 @@ const PropertyDetail = () => {
             <img
               src={mockProperty.images[currentImageIndex]}
               alt={mockProperty.title}
-              className="max-w-full max-h-[80vh] object-contain"
+              className="max-w-full max-h-[85vh] object-contain"
             />
             
             <button
@@ -266,15 +306,18 @@ const PropertyDetail = () => {
               <ChevronRight className="w-6 h-6 text-white" />
             </button>
 
-            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2">
-              {mockProperty.images.map((_, index) => (
+            {/* Thumbnails */}
+            <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex gap-2 max-w-[80%] overflow-x-auto">
+              {mockProperty.images.map((img, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentImageIndex(index)}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    currentImageIndex === index ? "bg-white" : "bg-white/40"
+                  className={`flex-shrink-0 w-16 h-12 rounded-lg overflow-hidden transition-all ${
+                    currentImageIndex === index ? "ring-2 ring-white scale-110" : "opacity-50 hover:opacity-100"
                   }`}
-                />
+                >
+                  <img src={img} alt="" className="w-full h-full object-cover" />
+                </button>
               ))}
             </div>
 
@@ -284,10 +327,11 @@ const PropertyDetail = () => {
           </div>
         )}
 
+        {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {/* Left Content (60%) */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Title & Type */}
+            {/* Title & Address */}
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary/10 text-primary">
@@ -300,82 +344,30 @@ const PropertyDetail = () => {
               <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-3">
                 {mockProperty.title}
               </h1>
-              <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-muted-foreground">
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4 text-primary" />
-                  <span>{mockProperty.address}</span>
-                </div>
-                <span className="hidden sm:inline text-border">•</span>
-                <span>{mockProperty.district}</span>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
+                <span>{mockProperty.address}</span>
               </div>
             </div>
 
-            {/* Price Block */}
+            {/* Quick Stats */}
             <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div>
-                  <p className="text-3xl md:text-4xl font-display font-bold text-foreground">
-                    {mockProperty.price.toLocaleString("ru-RU")} ₽
-                  </p>
-                  <p className="text-muted-foreground mt-1">
-                    {mockProperty.pricePerMeter.toLocaleString("ru-RU")} ₽ за м²
-                  </p>
-                </div>
-                <div className="flex items-center gap-4 p-4 bg-primary/5 rounded-xl border border-primary/10">
-                  <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <CreditCard className="w-6 h-6 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Ипотека от</p>
-                    <p className="text-xl font-bold text-foreground">
-                      {mockProperty.mortgagePayment.toLocaleString("ru-RU")} ₽
-                      <span className="text-sm font-normal text-muted-foreground">/мес</span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Characteristics */}
-            <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
-              <h2 className="text-xl font-display font-semibold mb-6">Характеристики</h2>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {[
-                  { icon: Home, label: "Комнат", value: mockProperty.rooms },
-                  { icon: Maximize2, label: "Площадь", value: `${mockProperty.area} м²` },
-                  { icon: Building2, label: "Этаж", value: `${mockProperty.floor} из ${mockProperty.totalFloors}` },
-                  { icon: Calendar, label: "Год сдачи", value: mockProperty.year },
-                ].map((item, index) => (
-                  <div key={index} className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <item.icon className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">{item.label}</p>
-                      <p className="font-semibold text-foreground">{item.value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="border-t border-border mt-6 pt-6">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Отделка</span>
-                    <span className="font-medium text-foreground">{mockProperty.finishing}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Жилой комплекс</span>
-                    <span className="font-medium text-primary">{mockProperty.complex}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Застройщик</span>
-                    <span className="font-medium text-foreground">{mockProperty.developer}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Готовность</span>
-                    <span className="font-medium text-green-600">{mockProperty.readiness}</span>
-                  </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-foreground">{mockProperty.area}</div>
+                  <div className="text-sm text-muted-foreground">м²</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-foreground">{mockProperty.rooms}</div>
+                  <div className="text-sm text-muted-foreground">комнат</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-foreground">{mockProperty.floor}/{mockProperty.totalFloors}</div>
+                  <div className="text-sm text-muted-foreground">этаж</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-foreground">{mockProperty.ceilingHeight}</div>
+                  <div className="text-sm text-muted-foreground">м высота</div>
                 </div>
               </div>
             </div>
@@ -383,7 +375,42 @@ const PropertyDetail = () => {
             {/* Description */}
             <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
               <h2 className="text-xl font-display font-semibold mb-4">Описание</h2>
-              <p className="text-muted-foreground leading-relaxed">{mockProperty.description}</p>
+              <p className={`text-muted-foreground leading-relaxed ${!showFullDescription ? "line-clamp-3" : ""}`}>
+                {mockProperty.description}
+              </p>
+              {mockProperty.description.length > 200 && (
+                <button 
+                  onClick={() => setShowFullDescription(!showFullDescription)}
+                  className="mt-3 text-primary font-medium hover:underline"
+                >
+                  {showFullDescription ? "Свернуть" : "Читать полностью →"}
+                </button>
+              )}
+            </div>
+
+            {/* Characteristics */}
+            <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
+              <h2 className="text-xl font-display font-semibold mb-6">Характеристики</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {[
+                  { label: "Материал стен", value: mockProperty.material, icon: Building2 },
+                  { label: "Год постройки", value: mockProperty.year, icon: Calendar },
+                  { label: "Санузел", value: mockProperty.bathroom, icon: Bath },
+                  { label: "Балкон/Лоджия", value: mockProperty.balcony, icon: DoorOpen },
+                  { label: "Площадь", value: `${mockProperty.area} м²`, icon: Ruler },
+                  { label: "Отделка", value: mockProperty.finishing, icon: Sparkles },
+                ].map((item, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-muted/30">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <item.icon className="w-4 h-4 text-primary" />
+                      </div>
+                      <span className="text-muted-foreground">{item.label}</span>
+                    </div>
+                    <span className="font-medium text-foreground">{item.value}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
             {/* Features */}
@@ -440,7 +467,7 @@ const PropertyDetail = () => {
                 address={mockProperty.address}
                 coordinates={mockProperty.coordinates}
                 zoom={16}
-                className="h-80"
+                className="h-80 rounded-xl"
               />
               <p className="mt-3 text-sm text-muted-foreground flex items-center gap-2">
                 <MapPin className="w-4 h-4 text-primary" />
@@ -449,45 +476,92 @@ const PropertyDetail = () => {
             </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="lg:col-span-1">
-            <div className="bg-card rounded-2xl border border-border p-6 shadow-card sticky top-24 space-y-4">
-              <div className="text-center pb-4 border-b border-border">
-                <p className="text-2xl font-bold text-foreground">
-                  {mockProperty.price.toLocaleString("ru-RU")} ₽
+          {/* Right Sidebar (40%) - Desktop Only */}
+          <div className="hidden lg:block lg:col-span-1">
+            <div className="bg-card rounded-2xl border border-border p-6 shadow-card sticky top-24 space-y-6">
+              {/* Price Section */}
+              <div className="pb-4 border-b border-border">
+                <p className="text-sm text-muted-foreground mb-1">Стоимость</p>
+                <p className="text-3xl font-bold text-foreground">
+                  {formatPrice(mockProperty.price)}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  от {mockProperty.mortgagePayment.toLocaleString("ru-RU")} ₽/мес в ипотеку
+                  {mockProperty.pricePerMeter.toLocaleString("ru-RU")} ₽/м²
                 </p>
               </div>
-              
-              <Button className="w-full h-12 gap-2 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl">
-                <Phone className="w-5 h-5" />
-                Позвонить
-              </Button>
-              <ViewingRequestForm
-                propertyId={mockProperty.id}
-                propertyTitle={mockProperty.title}
-                propertyImage={mockProperty.images[0]}
-                propertyPrice={mockProperty.price}
-              />
-              <Button
-                variant="outline"
-                className={`w-full h-12 gap-2 rounded-xl font-medium ${
-                  favorite 
-                    ? "border-primary text-primary bg-primary/5" 
-                    : "border-border text-foreground hover:border-primary hover:text-primary"
-                }`}
-                onClick={toggleFavorite}
-              >
-                <Heart className={`w-5 h-5 ${favorite ? "fill-primary" : ""}`} />
-                {favorite ? "В избранном" : "Добавить в избранное"}
-              </Button>
 
-              <div className="pt-4 border-t border-border">
-                <p className="text-xs text-muted-foreground text-center">
-                  Объект проверен. Актуальность данных: сегодня
+              {/* Mortgage Section */}
+              <div className="pb-4 border-b border-border">
+                <p className="text-sm text-muted-foreground mb-1">Ипотечный платёж</p>
+                <p className="text-2xl font-bold text-primary">
+                  {calculateMortgage(mockProperty.price).toLocaleString("ru-RU")} ₽
+                  <span className="text-sm font-normal text-muted-foreground">/мес</span>
                 </p>
+                <p className="text-xs text-muted-foreground mt-1">при 3% ставке, 20 лет</p>
+                <button className="mt-2 text-sm text-primary hover:underline">
+                  Рассчитать →
+                </button>
+              </div>
+
+              {/* Developer Section */}
+              <div className="pb-4 border-b border-border">
+                <p className="text-sm text-muted-foreground mb-1">Застройщик</p>
+                <p className="font-medium text-foreground">{mockProperty.developer}</p>
+                <Link 
+                  to={`/developers/${mockProperty.developerId}`}
+                  className="text-sm text-primary hover:underline"
+                >
+                  Другие объекты →
+                </Link>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button 
+                  variant="primary" 
+                  size="lg" 
+                  fullWidth
+                  leftIcon={<Phone className="w-5 h-5" />}
+                  onClick={handlePhoneClick}
+                >
+                  Показать номер
+                </Button>
+                <ViewingRequestForm
+                  propertyId={mockProperty.id}
+                  propertyTitle={mockProperty.title}
+                  propertyImage={mockProperty.images[0]}
+                  propertyPrice={mockProperty.price}
+                />
+                <Button
+                  variant="ghost"
+                  size="md"
+                  fullWidth
+                  leftIcon={<Heart className={`w-5 h-5 ${favorite ? "fill-primary text-primary" : ""}`} />}
+                  onClick={toggleFavorite}
+                >
+                  {favorite ? "В избранном" : "В избранное"}
+                </Button>
+              </div>
+
+              {/* Share Section */}
+              <div className="pt-4 border-t border-border">
+                <p className="text-sm text-muted-foreground mb-3">Поделиться</p>
+                <div className="flex gap-2">
+                  <button 
+                    onClick={handleShare}
+                    className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+                  >
+                    <Copy className="w-5 h-5 text-muted-foreground" />
+                  </button>
+                  <a 
+                    href={`https://t.me/share/url?url=${encodeURIComponent(window.location.href)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 rounded-lg bg-muted/50 hover:bg-muted flex items-center justify-center transition-colors"
+                  >
+                    <MessageCircle className="w-5 h-5 text-muted-foreground" />
+                  </a>
+                </div>
               </div>
             </div>
           </div>
@@ -512,6 +586,32 @@ const PropertyDetail = () => {
           </div>
         </section>
       </main>
+
+      {/* Mobile Sticky CTA */}
+      <div className="fixed bottom-0 left-0 right-0 lg:hidden bg-background border-t border-border p-4 z-40 shadow-lg">
+        <div className="flex items-center gap-3">
+          <div className="flex-1">
+            <p className="text-lg font-bold text-foreground">{formatPrice(mockProperty.price)}</p>
+            <p className="text-xs text-muted-foreground">{mockProperty.pricePerMeter.toLocaleString("ru-RU")} ₽/м²</p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`flex-shrink-0 ${favorite ? "text-primary" : ""}`}
+            onClick={toggleFavorite}
+          >
+            <Heart className={`w-5 h-5 ${favorite ? "fill-primary" : ""}`} />
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            leftIcon={<Phone className="w-4 h-4" />}
+            onClick={handlePhoneClick}
+          >
+            Позвонить
+          </Button>
+        </div>
+      </div>
 
       <Footer />
     </div>

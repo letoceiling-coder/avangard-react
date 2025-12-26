@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
 export interface User {
   id: string;
@@ -35,8 +37,8 @@ interface AuthContextType {
   isLoading: boolean;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (email: string, password: string, name: string) => Promise<{ success: boolean; error?: string }>;
-  logout: () => void;
-  updateProfile: (data: Partial<User>) => void;
+  logout: () => Promise<void>;
+  updateProfile: (data: Partial<User>) => Promise<void>;
   viewHistory: ViewedProperty[];
   addToViewHistory: (property: Omit<ViewedProperty, "viewedAt">) => void;
   clearViewHistory: () => void;
@@ -46,25 +48,80 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Simulated users database
-const USERS_STORAGE_KEY = "livegrid_users";
-const CURRENT_USER_KEY = "livegrid_current_user";
+// Local storage keys for non-sensitive UI state
 const VIEW_HISTORY_KEY = "livegrid_view_history";
 const APPLICATIONS_KEY = "livegrid_applications";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [viewHistory, setViewHistory] = useState<ViewedProperty[]>([]);
   const [applications, setApplications] = useState<Application[]>([]);
 
-  useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem(CURRENT_USER_KEY);
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
+  // Fetch user profile from database
+  const fetchProfile = async (userId: string) => {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+
+    if (error) {
+      console.error('Error fetching profile:', error);
+      return null;
     }
-    
+
+    if (data) {
+      return {
+        id: data.id,
+        email: data.email,
+        name: data.name,
+        phone: data.phone || undefined,
+        avatar: data.avatar || undefined,
+        createdAt: data.created_at,
+      } as User;
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    // Set up auth state listener FIRST
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          // Defer profile fetch to avoid deadlock
+          setTimeout(() => {
+            fetchProfile(session.user.id).then(profile => {
+              if (profile) {
+                setUser(profile);
+              }
+            });
+          }, 0);
+        } else {
+          setUser(null);
+        }
+      }
+    );
+
+    // THEN check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        fetchProfile(session.user.id).then(profile => {
+          if (profile) {
+            setUser(profile);
+          }
+          setIsLoading(false);
+        });
+      } else {
+        setIsLoading(false);
+      }
+    });
+
+    // Load view history and applications from localStorage (non-sensitive UI state)
     const savedHistory = localStorage.getItem(VIEW_HISTORY_KEY);
     if (savedHistory) {
       setViewHistory(JSON.parse(savedHistory));
@@ -75,80 +132,94 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setApplications(JSON.parse(savedApplications));
     }
 
-    setIsLoading(false);
+    return () => subscription.unsubscribe();
   }, []);
 
-  const getUsers = (): Record<string, { password: string; user: User }> => {
-    const users = localStorage.getItem(USERS_STORAGE_KEY);
-    return users ? JSON.parse(users) : {};
-  };
-
-  const saveUsers = (users: Record<string, { password: string; user: User }>) => {
-    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
-  };
-
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
-    const users = getUsers();
-    const userRecord = users[email.toLowerCase()];
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email.toLowerCase().trim(),
+        password,
+      });
 
-    if (!userRecord) {
-      return { success: false, error: "Пользователь не найден" };
+      if (error) {
+        // Map Supabase error messages to Russian
+        if (error.message.includes('Invalid login credentials')) {
+          return { success: false, error: "Неверный email или пароль" };
+        }
+        if (error.message.includes('Email not confirmed')) {
+          return { success: false, error: "Email не подтвержден" };
+        }
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: "Произошла ошибка при входе" };
     }
-
-    if (userRecord.password !== password) {
-      return { success: false, error: "Неверный пароль" };
-    }
-
-    setUser(userRecord.user);
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(userRecord.user));
-    return { success: true };
   };
 
   const register = async (email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> => {
-    const users = getUsers();
-    
-    if (users[email.toLowerCase()]) {
-      return { success: false, error: "Пользователь с таким email уже существует" };
+    try {
+      const redirectUrl = `${window.location.origin}/`;
+      
+      const { data, error } = await supabase.auth.signUp({
+        email: email.toLowerCase().trim(),
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            name: name.trim(),
+          },
+        },
+      });
+
+      if (error) {
+        // Map Supabase error messages to Russian
+        if (error.message.includes('User already registered')) {
+          return { success: false, error: "Пользователь с таким email уже существует" };
+        }
+        if (error.message.includes('Password')) {
+          return { success: false, error: "Пароль должен быть не менее 6 символов" };
+        }
+        return { success: false, error: error.message };
+      }
+
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: "Произошла ошибка при регистрации" };
     }
-
-    const newUser: User = {
-      id: crypto.randomUUID(),
-      email: email.toLowerCase(),
-      name,
-      createdAt: new Date().toISOString(),
-    };
-
-    users[email.toLowerCase()] = { password, user: newUser };
-    saveUsers(users);
-
-    setUser(newUser);
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(newUser));
-    return { success: true };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    localStorage.removeItem(CURRENT_USER_KEY);
+    setSession(null);
   };
 
-  const updateProfile = (data: Partial<User>) => {
+  const updateProfile = async (data: Partial<User>) => {
     if (!user) return;
-    
-    const updatedUser = { ...user, ...data };
-    setUser(updatedUser);
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(updatedUser));
 
-    // Update in users database
-    const users = getUsers();
-    if (users[user.email]) {
-      users[user.email].user = updatedUser;
-      saveUsers(users);
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        name: data.name,
+        phone: data.phone,
+        avatar: data.avatar,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      console.error('Error updating profile:', error);
+      return;
     }
+
+    setUser({ ...user, ...data });
   };
 
   const addToViewHistory = (property: Omit<ViewedProperty, "viewedAt">) => {
     setViewHistory(prev => {
-      // Remove if already exists
       const filtered = prev.filter(p => p.id !== property.id);
       const newHistory = [{ ...property, viewedAt: new Date().toISOString() }, ...filtered].slice(0, 50);
       localStorage.setItem(VIEW_HISTORY_KEY, JSON.stringify(newHistory));
@@ -180,7 +251,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated: !!user,
+        isAuthenticated: !!user && !!session,
         isLoading,
         login,
         register,

@@ -1,413 +1,744 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo } from "react";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import PropertyCard from "@/components/PropertyCard";
+import PropertyCard, { ExtendedProperty } from "@/components/PropertyCard";
 import CatalogMap from "@/components/CatalogMap";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { 
-  Grid3x3, List, SlidersHorizontal, Map, Search, X, 
-  ChevronDown, ArrowUpDown, MapPin
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Grid3x3,
+  List,
+  Map,
+  SlidersHorizontal,
+  ChevronLeft,
+  ChevronRight,
+  X,
+  MapPin,
+  Maximize2,
+  Home,
+  Building2,
+  Eye,
 } from "lucide-react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
-const mockProperties = [
+// Extended mock data with coordinates
+const allProperties: (ExtendedProperty & { lat: number; lng: number })[] = [
   {
     id: "1",
-    title: "3-комнатная квартира в ЖК «Белый город»",
+    title: "3-комнатная квартира",
     price: 6500000,
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=800&fit=crop",
     area: 85,
     rooms: 3,
     floor: 12,
     address: "ул. Победы, 89",
-    type: "Новостройка" as const,
+    type: "Новостройка",
+    buildingName: "ЖК «Белый город»",
+    status: "new",
+    lat: 50.5956,
+    lng: 36.5873,
   },
   {
     id: "2",
-    title: "2-комнатная квартира с видом на парк",
+    title: "2-комнатная квартира",
     price: 4800000,
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=800&fit=crop",
     area: 62,
     rooms: 2,
     floor: 8,
     address: "пр. Славы, 45",
-    type: "Новостройка" as const,
+    type: "Вторичка",
+    status: "secondary",
+    lat: 50.5920,
+    lng: 36.5920,
   },
   {
     id: "3",
-    title: "Пентхаус в элитном ЖК «Империал»",
+    title: "Пентхаус",
     price: 15000000,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=800&fit=crop",
     area: 145,
     rooms: 4,
     floor: 25,
     address: "ул. Щорса, 2",
-    type: "Новостройка" as const,
+    type: "Новостройка",
+    buildingName: "ЖК «Империал»",
+    status: "verified",
+    lat: 50.5980,
+    lng: 36.5800,
   },
   {
     id: "4",
-    title: "Студия в новом ЖК",
+    title: "Студия",
     price: 2800000,
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=800&fit=crop",
     area: 28,
     rooms: 1,
     floor: 5,
     address: "ул. Белгородская, 12",
-    type: "Новостройка" as const,
+    type: "Новостройка",
+    buildingName: "ЖК «Современник»",
+    status: "new",
+    lat: 50.5850,
+    lng: 36.5950,
   },
   {
     id: "5",
-    title: "Просторная 4-комнатная квартира",
-    price: 9200000,
-    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=600&fit=crop",
-    area: 120,
-    rooms: 4,
-    floor: 15,
-    address: "пр. Богдана Хмельницкого, 78",
-    type: "Вторичка" as const,
+    title: "1-комнатная квартира",
+    price: 3200000,
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=800&fit=crop",
+    area: 42,
+    rooms: 1,
+    floor: 7,
+    address: "ул. Губкина, 17",
+    type: "Новостройка",
+    status: "new",
+    lat: 50.5900,
+    lng: 36.6000,
   },
   {
     id: "6",
-    title: "Квартира с ремонтом в центре",
-    price: 5500000,
-    image: "https://images.unsplash.com/photo-1484154218962-a197022b5858?w=800&h=600&fit=crop",
-    area: 72,
+    title: "2-комнатная квартира",
+    price: 5100000,
+    image: "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&h=800&fit=crop",
+    area: 68,
+    rooms: 2,
+    floor: 14,
+    address: "ул. Садовая, 23",
+    type: "Вторичка",
+    status: "verified",
+    lat: 50.6000,
+    lng: 36.5850,
+  },
+  {
+    id: "7",
+    title: "4-комнатная квартира",
+    price: 9800000,
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=800&fit=crop",
+    area: 120,
+    rooms: 4,
+    floor: 18,
+    address: "ул. Центральная, 1",
+    type: "Новостройка",
+    buildingName: "ЖК «Центральный»",
+    status: "new",
+    lat: 50.5940,
+    lng: 36.5780,
+  },
+  {
+    id: "8",
+    title: "3-комнатная квартира",
+    price: 7200000,
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=800&fit=crop",
+    area: 92,
+    rooms: 3,
+    floor: 9,
+    address: "пр. Богдана Хмельницкого, 78",
+    type: "Вторичка",
+    status: "secondary",
+    lat: 50.5880,
+    lng: 36.5900,
+  },
+  {
+    id: "9",
+    title: "1-комнатная квартира",
+    price: 3500000,
+    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=800&fit=crop",
+    area: 45,
+    rooms: 1,
+    floor: 11,
+    address: "ул. Харьковская, 15",
+    type: "Новостройка",
+    status: "new",
+    lat: 50.5970,
+    lng: 36.5930,
+  },
+  {
+    id: "10",
+    title: "2-комнатная квартира",
+    price: 4500000,
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=800&fit=crop",
+    area: 58,
     rooms: 2,
     floor: 6,
-    address: "ул. Попова, 34",
-    type: "Вторичка" as const,
+    address: "ул. Попова, 32",
+    type: "Вторичка",
+    status: "verified",
+    lat: 50.5910,
+    lng: 36.5820,
+  },
+  {
+    id: "11",
+    title: "Студия с террасой",
+    price: 3100000,
+    image: "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800&h=800&fit=crop",
+    area: 35,
+    rooms: 1,
+    floor: 3,
+    address: "ул. Костюкова, 44",
+    type: "Новостройка",
+    status: "new",
+    lat: 50.5865,
+    lng: 36.5965,
+  },
+  {
+    id: "12",
+    title: "3-комнатная квартира",
+    price: 8500000,
+    image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&h=800&fit=crop",
+    area: 105,
+    rooms: 3,
+    floor: 16,
+    address: "ул. 5 Августа, 7",
+    type: "Новостройка",
+    buildingName: "ЖК «Империал»",
+    status: "verified",
+    lat: 50.5995,
+    lng: 36.5755,
   },
 ];
 
-const FilterContent = ({ 
-  priceRange, 
-  setPriceRange,
-  selectedRooms,
-  toggleRoom,
-}: { 
-  priceRange: number[]; 
-  setPriceRange: (value: number[]) => void;
-  selectedRooms: string[];
-  toggleRoom: (room: string) => void;
-}) => (
-  <div className="space-y-5">
-    <div>
-      <label className="text-sm font-medium text-foreground mb-2 block">Регион</label>
-      <Select defaultValue="belgorod">
-        <SelectTrigger className="lg-input">
-          <SelectValue placeholder="Выберите регион" />
-        </SelectTrigger>
-        <SelectContent className="bg-card border-border">
-          <SelectItem value="belgorod">Белгород</SelectItem>
-          <SelectItem value="krasnodar">Краснодарский край</SelectItem>
-          <SelectItem value="rostov">Ростовская область</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+const regions = [
+  { value: "belgorod", label: "Белгород" },
+  { value: "kursk", label: "Курск" },
+  { value: "voronezh", label: "Воронеж" },
+];
 
-    <div>
-      <label className="text-sm font-medium text-foreground mb-2 block">Тип недвижимости</label>
-      <Select>
-        <SelectTrigger className="lg-input">
-          <SelectValue placeholder="Любой тип" />
-        </SelectTrigger>
-        <SelectContent className="bg-card border-border">
-          <SelectItem value="new">Новостройка</SelectItem>
-          <SelectItem value="secondary">Вторичка</SelectItem>
-          <SelectItem value="house">Дом</SelectItem>
-          <SelectItem value="commercial">Коммерция</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+const propertyTypes = [
+  { value: "all", label: "Все типы" },
+  { value: "apartment", label: "Квартиры" },
+  { value: "room", label: "Комнаты" },
+  { value: "house", label: "Дома" },
+  { value: "commercial", label: "Коммерция" },
+];
 
-    <div>
-      <label className="text-sm font-medium text-foreground mb-3 block">Комнаты</label>
-      <div className="flex flex-wrap gap-2">
-        {["Студия", "1", "2", "3", "4+"].map((room) => (
-          <button 
-            key={room} 
-            onClick={() => toggleRoom(room)}
-            className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all ${
-              selectedRooms.includes(room)
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-card text-foreground border-border hover:border-primary/50"
-            }`}
-          >
-            {room}
-          </button>
-        ))}
-      </div>
-    </div>
+const statusOptions = [
+  { value: "all", label: "Любой статус" },
+  { value: "new", label: "Новостройка" },
+  { value: "secondary", label: "Вторичка" },
+  { value: "verified", label: "Проверено" },
+];
 
-    <div>
-      <label className="text-sm font-medium text-foreground mb-4 block">
-        Цена: {(priceRange[0] / 1000000).toFixed(1)} — {(priceRange[1] / 1000000).toFixed(1)} млн ₽
-      </label>
-      <Slider
-        value={priceRange}
-        onValueChange={setPriceRange}
-        max={20000000}
-        min={0}
-        step={100000}
-        className="mb-2"
-      />
-    </div>
+const roomOptions = ["Студия", "1", "2", "3", "4+"];
 
-    <div>
-      <label className="text-sm font-medium text-foreground mb-2 block">Площадь, м²</label>
-      <div className="grid grid-cols-2 gap-2">
-        <Input placeholder="От" type="number" className="lg-input" />
-        <Input placeholder="До" type="number" className="lg-input" />
-      </div>
-    </div>
+interface Filters {
+  region: string;
+  type: string;
+  status: string;
+  priceMin: number;
+  priceMax: number;
+  areaMin: number;
+  areaMax: number;
+  rooms: string[];
+  floors: string;
+}
 
-    <div>
-      <label className="text-sm font-medium text-foreground mb-2 block">Район</label>
-      <Select>
-        <SelectTrigger className="lg-input">
-          <SelectValue placeholder="Любой район" />
-        </SelectTrigger>
-        <SelectContent className="bg-card border-border">
-          <SelectItem value="center">Центральный</SelectItem>
-          <SelectItem value="west">Западный</SelectItem>
-          <SelectItem value="east">Восточный</SelectItem>
-          <SelectItem value="north">Северный</SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+const defaultFilters: Filters = {
+  region: "belgorod",
+  type: "all",
+  status: "all",
+  priceMin: 0,
+  priceMax: 20000000,
+  areaMin: 0,
+  areaMax: 200,
+  rooms: [],
+  floors: "",
+};
 
-    <Button className="w-full lg-btn-primary">
-      Применить фильтры
-    </Button>
-
-    <button className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors">
-      Сбросить все фильтры
-    </button>
-  </div>
-);
-
-const Catalog = () => {
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showMap, setShowMap] = useState(true);
-  const [priceRange, setPriceRange] = useState([0, 20000000]);
-  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
-  const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
-  const [sortBy, setSortBy] = useState("default");
-
-  const toggleRoom = (room: string) => {
-    setSelectedRooms(prev => 
-      prev.includes(room) ? prev.filter(r => r !== room) : [...prev, room]
-    );
+// Filter Panel Component
+const FilterPanel = ({
+  filters,
+  setFilters,
+  onReset,
+  activeCount,
+}: {
+  filters: Filters;
+  setFilters: (filters: Filters) => void;
+  onReset: () => void;
+  activeCount: number;
+}) => {
+  const updateFilter = <K extends keyof Filters>(key: K, value: Filters[K]) => {
+    setFilters({ ...filters, [key]: value });
   };
 
-  const handlePropertyClick = (id: string) => {
-    window.location.href = `/property/${id}`;
+  const toggleRoom = (room: string) => {
+    const newRooms = filters.rooms.includes(room)
+      ? filters.rooms.filter((r) => r !== room)
+      : [...filters.rooms, room];
+    updateFilter("rooms", newRooms);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Region */}
+      <div>
+        <label className="text-sm font-medium text-title mb-2 block">Регион</label>
+        <Select value={filters.region} onValueChange={(v) => updateFilter("region", v)}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-border z-50">
+            {regions.map((r) => (
+              <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Type */}
+      <div>
+        <label className="text-sm font-medium text-title mb-2 block">Тип недвижимости</label>
+        <Select value={filters.type} onValueChange={(v) => updateFilter("type", v)}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-border z-50">
+            {propertyTypes.map((t) => (
+              <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Status */}
+      <div>
+        <label className="text-sm font-medium text-title mb-2 block">Статус</label>
+        <Select value={filters.status} onValueChange={(v) => updateFilter("status", v)}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="bg-card border-border z-50">
+            {statusOptions.map((s) => (
+              <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Price Range */}
+      <div>
+        <label className="text-sm font-medium text-title mb-3 block">
+          Цена: {(filters.priceMin / 1000000).toFixed(1)} — {(filters.priceMax / 1000000).toFixed(1)} млн ₽
+        </label>
+        <Slider
+          value={[filters.priceMin, filters.priceMax]}
+          onValueChange={([min, max]) => {
+            setFilters({ ...filters, priceMin: min, priceMax: max });
+          }}
+          min={0}
+          max={20000000}
+          step={100000}
+        />
+      </div>
+
+      {/* Area Range */}
+      <div>
+        <label className="text-sm font-medium text-title mb-2 block">Площадь, м²</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Input
+            type="number"
+            placeholder="От"
+            value={filters.areaMin || ""}
+            onChange={(e) => updateFilter("areaMin", Number(e.target.value))}
+          />
+          <Input
+            type="number"
+            placeholder="До"
+            value={filters.areaMax || ""}
+            onChange={(e) => updateFilter("areaMax", Number(e.target.value))}
+          />
+        </div>
+      </div>
+
+      {/* Rooms */}
+      <div>
+        <label className="text-sm font-medium text-title mb-3 block">Комнаты</label>
+        <div className="flex flex-wrap gap-2">
+          {roomOptions.map((room) => (
+            <button
+              key={room}
+              onClick={() => toggleRoom(room)}
+              className={`px-3 py-2 rounded-input text-sm font-medium transition-all border ${
+                filters.rooms.includes(room)
+                  ? "bg-primary text-white border-primary"
+                  : "bg-surface text-title border-border hover:border-primary"
+              }`}
+            >
+              {room === "Студия" ? room : `${room}`}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Floors */}
+      <div>
+        <label className="text-sm font-medium text-title mb-2 block">Этаж</label>
+        <div className="grid grid-cols-2 gap-2">
+          <Input type="number" placeholder="От" />
+          <Input type="number" placeholder="До" />
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="pt-4 border-t border-border space-y-3">
+        <Button variant="primary" className="w-full">
+          Применить фильтры
+        </Button>
+        {activeCount > 0 && (
+          <button
+            onClick={onReset}
+            className="w-full text-center text-sm text-muted-foreground hover:text-primary transition-colors"
+          >
+            Сбросить все фильтры ({activeCount})
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// List View Row Component
+const ListViewRow = ({
+  property,
+  isActive,
+  onHover,
+  onLeave,
+}: {
+  property: ExtendedProperty;
+  isActive: boolean;
+  onHover: () => void;
+  onLeave: () => void;
+}) => {
+  const navigate = useNavigate();
+  const pricePerMeter = Math.round(property.price / property.area);
+
+  return (
+    <div
+      onClick={() => navigate(`/property/${property.id}`)}
+      onMouseEnter={onHover}
+      onMouseLeave={onLeave}
+      className={`flex items-center gap-4 p-4 bg-card rounded-card border cursor-pointer transition-all hover:shadow-md ${
+        isActive ? "border-primary ring-1 ring-primary" : "border-border"
+      }`}
+    >
+      {/* Photo */}
+      <div className="w-20 h-20 rounded-input overflow-hidden flex-shrink-0">
+        <img src={property.image} alt={property.title} className="w-full h-full object-cover" />
+      </div>
+
+      {/* Info */}
+      <div className="flex-1 min-w-0">
+        <h3 className="font-semibold text-title truncate">{property.title}</h3>
+        <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
+          <MapPin className="w-3.5 h-3.5" />
+          {property.address}
+        </p>
+      </div>
+
+      {/* Params */}
+      <div className="hidden md:flex items-center gap-4 text-sm text-muted-foreground">
+        <span className="flex items-center gap-1">
+          <Maximize2 className="w-3.5 h-3.5" />
+          {property.area} м²
+        </span>
+        <span className="flex items-center gap-1">
+          <Home className="w-3.5 h-3.5" />
+          {property.rooms} комн.
+        </span>
+        <span className="flex items-center gap-1">
+          <Building2 className="w-3.5 h-3.5" />
+          {property.floor} эт.
+        </span>
+      </div>
+
+      {/* Price */}
+      <div className="text-right flex-shrink-0">
+        <p className="font-bold text-title">{property.price.toLocaleString("ru-RU")} ₽</p>
+        <p className="text-xs text-muted-foreground">{pricePerMeter.toLocaleString("ru-RU")} ₽/м²</p>
+      </div>
+
+      {/* Button */}
+      <Button variant="primary" size="sm" className="hidden sm:flex">
+        <Eye className="w-4 h-4 mr-1" />
+        Подробнее
+      </Button>
+    </div>
+  );
+};
+
+const Catalog = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
+  const [filters, setFilters] = useState<Filters>(defaultFilters);
+  const [hoveredPropertyId, setHoveredPropertyId] = useState<string | null>(null);
+  const [highlightedPropertyId, setHighlightedPropertyId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  
+  const itemsPerPage = 12;
+  const totalPages = Math.ceil(allProperties.length / itemsPerPage);
+
+  // Calculate active filter count
+  const activeFilterCount = useMemo(() => {
+    let count = 0;
+    if (filters.type !== "all") count++;
+    if (filters.status !== "all") count++;
+    if (filters.priceMin > 0 || filters.priceMax < 20000000) count++;
+    if (filters.areaMin > 0 || filters.areaMax < 200) count++;
+    if (filters.rooms.length > 0) count++;
+    return count;
+  }, [filters]);
+
+  // Filter properties (mock filtering)
+  const filteredProperties = useMemo(() => {
+    return allProperties.filter((p) => {
+      if (filters.status !== "all" && p.status !== filters.status) return false;
+      if (filters.priceMin > 0 && p.price < filters.priceMin) return false;
+      if (filters.priceMax < 20000000 && p.price > filters.priceMax) return false;
+      if (filters.areaMin > 0 && p.area < filters.areaMin) return false;
+      if (filters.areaMax < 200 && p.area > filters.areaMax) return false;
+      if (filters.rooms.length > 0) {
+        const roomStr = p.rooms === 1 ? (p.area < 35 ? "Студия" : "1") : p.rooms >= 4 ? "4+" : String(p.rooms);
+        if (!filters.rooms.includes(roomStr)) return false;
+      }
+      return true;
+    });
+  }, [filters]);
+
+  // Paginated properties
+  const paginatedProperties = filteredProperties.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const resetFilters = () => {
+    setFilters(defaultFilters);
+  };
+
+  const handleMarkerClick = (id: string) => {
+    setHighlightedPropertyId(id);
+    // Scroll to card
+    const element = document.getElementById(`property-${id}`);
+    element?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <Header />
 
-      {/* Sticky Filter Bar */}
-      <div className="sticky top-0 z-30 bg-card border-b border-border shadow-header">
-        <div className="container mx-auto px-4 py-3">
-          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide">
-            {/* Search */}
-            <div className="relative flex-shrink-0 w-64">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input 
-                placeholder="Район или ЖК..." 
-                className="pl-9 h-10 bg-muted border-0 rounded-lg"
-              />
-            </div>
-
-            {/* Quick Filters */}
-            <Select defaultValue="any">
-              <SelectTrigger className="h-10 w-auto min-w-[140px] bg-muted border-0 rounded-lg">
-                <SelectValue placeholder="Комнаты" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="any">Любые</SelectItem>
-                <SelectItem value="1">1 комната</SelectItem>
-                <SelectItem value="2">2 комнаты</SelectItem>
-                <SelectItem value="3">3 комнаты</SelectItem>
-                <SelectItem value="4">4+ комнат</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select defaultValue="any">
-              <SelectTrigger className="h-10 w-auto min-w-[160px] bg-muted border-0 rounded-lg">
-                <SelectValue placeholder="Цена" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="any">Любая цена</SelectItem>
-                <SelectItem value="3m">До 3 млн ₽</SelectItem>
-                <SelectItem value="5m">До 5 млн ₽</SelectItem>
-                <SelectItem value="10m">До 10 млн ₽</SelectItem>
-                <SelectItem value="15m">До 15 млн ₽</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select defaultValue="any">
-              <SelectTrigger className="h-10 w-auto min-w-[140px] bg-muted border-0 rounded-lg">
-                <SelectValue placeholder="Тип" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="any">Любой</SelectItem>
-                <SelectItem value="new">Новостройки</SelectItem>
-                <SelectItem value="secondary">Вторичка</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* More Filters Button */}
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="sm" className="h-10 gap-2 flex-shrink-0 rounded-lg border-border">
-                  <SlidersHorizontal className="w-4 h-4" />
-                  Ещё фильтры
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:max-w-md">
-                <SheetHeader className="mb-6">
-                  <SheetTitle className="text-xl font-display">Все фильтры</SheetTitle>
-                </SheetHeader>
-                <FilterContent 
-                  priceRange={priceRange} 
-                  setPriceRange={setPriceRange}
-                  selectedRooms={selectedRooms}
-                  toggleRoom={toggleRoom}
-                />
-              </SheetContent>
-            </Sheet>
-
-            <div className="flex-1" />
-
-            {/* Sort */}
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="h-10 w-auto min-w-[160px] bg-card border-border rounded-lg">
-                <ArrowUpDown className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Сортировка" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="default">По умолчанию</SelectItem>
-                <SelectItem value="price-asc">Сначала дешевле</SelectItem>
-                <SelectItem value="price-desc">Сначала дороже</SelectItem>
-                <SelectItem value="area-desc">По площади</SelectItem>
-                <SelectItem value="date">По дате</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {/* Map Toggle */}
-            <Button
-              variant={showMap ? "default" : "outline"}
-              size="sm"
-              className={`h-10 gap-2 flex-shrink-0 rounded-lg ${showMap ? "bg-primary text-primary-foreground" : "border-border"}`}
-              onClick={() => setShowMap(!showMap)}
-            >
-              <Map className="w-4 h-4" />
-              <span className="hidden sm:inline">Карта</span>
-            </Button>
-
-            {/* View Toggle */}
-            <div className="flex items-center border border-border rounded-lg p-1 flex-shrink-0">
-              <button
-                onClick={() => setViewMode("grid")}
-                className={`p-1.5 rounded transition-colors ${
-                  viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Grid3x3 className="w-4 h-4" />
-              </button>
-              <button
-                onClick={() => setViewMode("list")}
-                className={`p-1.5 rounded transition-colors ${
-                  viewMode === "list" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <List className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Content - Split View */}
       <div className="flex-1 flex">
-        {/* Properties List - 60% */}
-        <div className={`${showMap ? "w-full lg:w-[60%]" : "w-full"} overflow-y-auto`}>
-          <div className="container mx-auto px-4 py-6">
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h1 className="text-2xl font-display font-bold text-foreground">
-                  Недвижимость в Белгороде
-                </h1>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Найдено {mockProperties.length} объектов
-                </p>
-              </div>
-            </div>
-
-            {/* Properties Grid */}
-            <div className={`grid gap-4 ${
-              viewMode === "grid" 
-                ? showMap 
-                  ? "grid-cols-1 md:grid-cols-2" 
-                  : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
-                : "grid-cols-1"
-            }`}>
-              {mockProperties.map((property, index) => (
-                <div 
-                  key={property.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${index * 30}ms` }}
-                  onMouseEnter={() => setHoveredPropertyId(property.id)}
-                  onMouseLeave={() => setHoveredPropertyId(null)}
-                >
-                  <PropertyCard property={property} />
-                </div>
-              ))}
-            </div>
-
-            {/* Load More */}
-            <div className="text-center mt-8">
-              <Button variant="outline" className="lg-btn-secondary">
-                Показать ещё
-                <ChevronDown className="w-4 h-4 ml-2" />
-              </Button>
-            </div>
-          </div>
-        </div>
-
-        {/* Map - 40% */}
-        {showMap && (
-          <div className="hidden lg:block lg:w-[40%] sticky top-[57px] h-[calc(100vh-57px)]">
-            <CatalogMap 
-              properties={mockProperties}
-              onPropertyClick={handlePropertyClick}
-              hoveredPropertyId={hoveredPropertyId}
-              className="h-full"
+        {/* Sidebar - Desktop Only */}
+        <aside className="hidden md:block w-[300px] flex-shrink-0 border-r border-border bg-card sticky top-16 h-[calc(100vh-64px)] overflow-y-auto">
+          <div className="p-5">
+            <h2 className="text-lg font-semibold text-title mb-5">Фильтры</h2>
+            <FilterPanel
+              filters={filters}
+              setFilters={setFilters}
+              onReset={resetFilters}
+              activeCount={activeFilterCount}
             />
           </div>
-        )}
+        </aside>
+
+        {/* Main Content */}
+        <main className="flex-1 flex flex-col min-w-0">
+          {/* Top Bar */}
+          <div className="sticky top-16 z-30 bg-card border-b border-border px-4 py-3">
+            <div className="flex items-center justify-between gap-3">
+              {/* Mobile Filter Button */}
+              <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="md:hidden relative">
+                    <SlidersHorizontal className="w-4 h-4 mr-2" />
+                    Фильтры
+                    {activeFilterCount > 0 && (
+                      <span className="absolute -top-2 -right-2 w-5 h-5 bg-primary text-white text-xs rounded-full flex items-center justify-center">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-full sm:max-w-md overflow-y-auto">
+                  <SheetHeader className="mb-5">
+                    <SheetTitle>Фильтры</SheetTitle>
+                  </SheetHeader>
+                  <FilterPanel
+                    filters={filters}
+                    setFilters={setFilters}
+                    onReset={resetFilters}
+                    activeCount={activeFilterCount}
+                  />
+                </SheetContent>
+              </Sheet>
+
+              {/* Results Count */}
+              <div className="hidden md:block">
+                <span className="text-sm text-muted-foreground">
+                  Найдено <strong className="text-title">{filteredProperties.length}</strong> объектов
+                </span>
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center border border-border rounded-input overflow-hidden">
+                  <button
+                    onClick={() => setViewMode("grid")}
+                    className={`p-2 transition-colors ${
+                      viewMode === "grid" ? "bg-primary text-white" : "text-muted-foreground hover:text-title"
+                    }`}
+                  >
+                    <Grid3x3 className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("list")}
+                    className={`p-2 transition-colors ${
+                      viewMode === "list" ? "bg-primary text-white" : "text-muted-foreground hover:text-title"
+                    }`}
+                  >
+                    <List className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setViewMode("map")}
+                    className={`p-2 transition-colors ${
+                      viewMode === "map" ? "bg-primary text-white" : "text-muted-foreground hover:text-title"
+                    }`}
+                  >
+                    <Map className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Content Area */}
+          {viewMode === "map" ? (
+            // Fullscreen Map View (Mobile)
+            <div className="flex-1 md:hidden">
+              <CatalogMap
+                properties={filteredProperties}
+                onPropertyClick={(id) => navigate(`/property/${id}`)}
+                hoveredPropertyId={hoveredPropertyId}
+                className="h-full"
+              />
+            </div>
+          ) : (
+            <div className="flex flex-1">
+              {/* Properties List */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="p-4">
+                  {/* Mobile Results Count */}
+                  <div className="md:hidden mb-4">
+                    <p className="text-sm text-muted-foreground">
+                      Найдено <strong className="text-title">{filteredProperties.length}</strong> объектов
+                    </p>
+                  </div>
+
+                  {/* Grid View */}
+                  {viewMode === "grid" && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                      {paginatedProperties.map((property) => (
+                        <div
+                          key={property.id}
+                          id={`property-${property.id}`}
+                          onMouseEnter={() => setHoveredPropertyId(property.id)}
+                          onMouseLeave={() => setHoveredPropertyId(null)}
+                          className={highlightedPropertyId === property.id ? "ring-2 ring-primary rounded-card" : ""}
+                        >
+                          <PropertyCard property={property} />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* List View */}
+                  {viewMode === "list" && (
+                    <div className="space-y-3">
+                      {paginatedProperties.map((property) => (
+                        <div key={property.id} id={`property-${property.id}`}>
+                          <ListViewRow
+                            property={property}
+                            isActive={hoveredPropertyId === property.id || highlightedPropertyId === property.id}
+                            onHover={() => setHoveredPropertyId(property.id)}
+                            onLeave={() => setHoveredPropertyId(null)}
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Pagination */}
+                  {totalPages > 1 && (
+                    <nav className="flex items-center justify-center gap-2 mt-8 pt-6 border-t border-border">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === 1}
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                      </Button>
+
+                      <div className="flex items-center gap-1">
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => setCurrentPage(page)}
+                            className={`min-w-[36px] h-9 px-3 rounded-input text-sm font-medium transition-colors ${
+                              currentPage === page
+                                ? "bg-primary text-white"
+                                : "text-title hover:bg-surface"
+                            }`}
+                          >
+                            {page}
+                          </button>
+                        ))}
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={currentPage === totalPages}
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      >
+                        <ChevronRight className="w-4 h-4" />
+                      </Button>
+                    </nav>
+                  )}
+                </div>
+              </div>
+
+              {/* Map - Desktop Only (50% width) */}
+              <div className="hidden md:block md:w-1/2 sticky top-[120px] h-[calc(100vh-120px)]">
+                <CatalogMap
+                  properties={filteredProperties}
+                  onPropertyClick={handleMarkerClick}
+                  hoveredPropertyId={hoveredPropertyId}
+                  className="h-full"
+                />
+              </div>
+            </div>
+          )}
+        </main>
       </div>
 
-      {/* Mobile Map Button */}
-      <div className="lg:hidden fixed bottom-20 left-1/2 -translate-x-1/2 z-40">
-        <Button
-          onClick={() => setShowMap(!showMap)}
-          className="lg-btn-primary shadow-elevated rounded-full px-6"
-        >
-          <Map className="w-4 h-4 mr-2" />
-          {showMap ? "Список" : "Показать на карте"}
-        </Button>
-      </div>
-
-      {!showMap && <Footer />}
+      {viewMode !== "map" && <Footer />}
     </div>
   );
 };

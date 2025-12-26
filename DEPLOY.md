@@ -1,5 +1,35 @@
 # Инструкция по развертыванию проекта на сервере
 
+## Быстрое развертывание на сервере
+
+**Путь на сервере:** `~/trendagent.siteaccess.ru/public_html`
+
+```bash
+# 1. Подключение к серверу
+ssh user@your-server.com
+
+# 2. Переход в директорию
+cd ~/trendagent.siteaccess.ru/public_html
+
+# 3. Клонирование (если еще не клонирован)
+git clone https://github.com/letoceiling-coder/avangard-react.git
+cd avangard-react
+
+# 4. Установка зависимостей
+npm install
+
+# 5. Сборка проекта
+npm run build
+
+# 6. Копирование файлов в корень public_html
+cp -r dist/. ..
+```
+
+**Важно:** 
+- Приложение доступно по адресу: `https://trendagent.siteaccess.ru/`
+- Проект настроен для работы с корня домена
+- Файл `.htaccess` автоматически копируется в `dist/` при сборке
+
 ## Предварительные требования
 
 - Node.js (версия 18 или выше)
@@ -12,7 +42,7 @@
 
 ```bash
 ssh user@your-server.com
-cd ~/projects  # или любая другая директория
+cd ~/trendagent.siteaccess.ru/public_html
 ```
 
 ### 2. Клонирование репозитория
@@ -21,6 +51,9 @@ cd ~/projects  # или любая другая директория
 git clone https://github.com/letoceiling-coder/avangard-react.git
 cd avangard-react
 ```
+
+**Важно:** Проект настроен для работы с корня домена. 
+Приложение будет доступно по адресу: `https://trendagent.siteaccess.ru/`
 
 ### 3. Установка зависимостей
 
@@ -69,35 +102,37 @@ pm2 startup  # покажет команду для автозапуска
 npm run preview
 ```
 
-#### Вариант C: Развертывание на Apache сервере
+#### Вариант C: Развертывание на Apache сервере (рекомендуется)
 
-После сборки проекта скопируйте `.htaccess` в директорию `dist`:
+**Путь на сервере:** `~/trendagent.siteaccess.ru/public_html`
+
+После сборки проекта файл `.htaccess` автоматически копируется в `dist/`.
+
+**Копирование собранных файлов в production:**
 
 ```bash
-cp .htaccess dist/
+cd ~/trendagent.siteaccess.ru/public_html/avangard-react
+npm run build
+# Копируем содержимое dist/ в корень public_html
+cp -r dist/. ..
 ```
 
-Настройте Apache виртуальный хост (если есть доступ к конфигурации):
+**Настройка Apache:**
+
+Убедитесь, что в конфигурации виртуального хоста для `trendagent.siteaccess.ru` разрешен `AllowOverride All`:
 
 ```apache
-<VirtualHost *:80>
-    ServerName your-domain.com
-    DocumentRoot /home/user/projects/avangard-react/dist
-    
-    <Directory /home/user/projects/avangard-react/dist>
-        Options -Indexes +FollowSymLinks
-        AllowOverride All
-        Require all granted
-    </Directory>
-    
-    ErrorLog ${APACHE_LOG_DIR}/avangard-react-error.log
-    CustomLog ${APACHE_LOG_DIR}/avangard-react-access.log combined
-</VirtualHost>
+<Directory /home/user/trendagent.siteaccess.ru/public_html>
+    Options -Indexes +FollowSymLinks
+    AllowOverride All
+    Require all granted
+</Directory>
 ```
 
-Или если используете `.htaccess` в директории `dist`, просто убедитесь, что:
+**Важно:**
 - Включен `mod_rewrite` в Apache
-- В конфигурации виртуального хоста разрешен `AllowOverride All`
+- Файл `.htaccess` находится в корне `public_html/`
+- Приложение доступно по адресу: `https://trendagent.siteaccess.ru/`
 
 #### Вариант D: Настройка через reverse proxy (если есть доступ к nginx без sudo)
 
@@ -120,11 +155,13 @@ server {
 ### 6. Обновление проекта (после изменений в git)
 
 ```bash
-cd ~/projects/avangard-react
+cd ~/trendagent.siteaccess.ru/public_html/avangard-react
 git pull origin main
 npm install  # если были изменения в package.json
 npm run build
-# Перезапустить сервер (если используется PM2: pm2 restart all)
+
+# Копирование обновленных файлов в корень public_html
+cp -r dist/. ..
 ```
 
 ### 7. Настройка переменных окружения (если нужны)

@@ -1,467 +1,291 @@
-import { useEffect, useState, useRef } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Button } from "@/components/ui/button";
-import { 
-  Search, Building2, TrendingUp, MapPin, ArrowRight, Map, 
-  Home, Briefcase, ChevronLeft, ChevronRight, Key, Sparkles
-} from "lucide-react";
-import PropertyCard from "@/components/PropertyCard";
+import SearchWidget from "@/components/SearchWidget";
+import heroWinter from "@/assets/hero-bg-winter.png";
+import PropertyCard, { ExtendedProperty } from "@/components/PropertyCard";
+import StatsBlock from "@/components/StatsBlock";
+import CTASocialBlock from "@/components/CTASocialBlock";
+import PopularComplexes from "@/components/PopularComplexes";
+import QuickTypeSelection from "@/components/QuickTypeSelection";
+import SalesStarts from "@/components/SalesStarts";
+import MayLikeSection from "@/components/MayLikeSection";
+import NewsSlider from "@/components/NewsSlider";
+import HomeMapSection from "@/components/HomeMapSection";
+import { ArrowRight } from "lucide-react";
 
-const mockProperties = [
+const mockProperties: ExtendedProperty[] = [
   {
     id: "1",
-    title: "3-комнатная квартира в ЖК «Белый город»",
+    title: "3-комнатная квартира",
     price: 6500000,
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=800&fit=crop",
     area: 85,
     rooms: 3,
     floor: 12,
-    address: "ул. Победы, 89",
-    type: "Новостройка" as const,
+    address: "ул. Победы, 89, Ленинский район",
+    type: "Новостройка",
+    buildingName: "ЖК «Белый город»",
+    status: "new",
   },
   {
     id: "2",
-    title: "2-комнатная квартира с видом на парк",
+    title: "2-комнатная квартира",
     price: 4800000,
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=800&h=800&fit=crop",
     area: 62,
     rooms: 2,
     floor: 8,
-    address: "пр. Славы, 45",
-    type: "Вторичка" as const,
+    address: "пр. Славы, 45, Центральный район",
+    type: "Вторичка",
+    status: "secondary",
   },
   {
     id: "3",
-    title: "Пентхаус в элитном ЖК «Империал»",
+    title: "Пентхаус",
     price: 15000000,
-    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&h=800&fit=crop",
     area: 145,
     rooms: 4,
     floor: 25,
-    address: "ул. Щорса, 2",
-    type: "Новостройка" as const,
+    address: "ул. Щорса, 2, Центральный район",
+    type: "Новостройка",
+    buildingName: "ЖК «Империал»",
+    status: "verified",
   },
   {
     id: "4",
-    title: "Студия в новом ЖК",
+    title: "Студия",
     price: 2800000,
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=600&fit=crop",
+    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=800&h=800&fit=crop",
     area: 28,
     rooms: 1,
     floor: 5,
     address: "ул. Белгородская, 12",
-    type: "Новостройка" as const,
-  },
-];
-
-const popularComplexes = [
-  {
-    id: "1",
-    name: "ЖК «Белый город»",
-    image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=600&fit=crop",
-    minPrice: 2800000,
-    apartments: 156,
-    readiness: "Сдан",
-    address: "ул. Победы, 89",
-  },
-  {
-    id: "2",
-    name: "ЖК «Империал»",
-    image: "https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=800&h=600&fit=crop",
-    minPrice: 5200000,
-    apartments: 89,
-    readiness: "III кв. 2025",
-    address: "ул. Щорса, 2",
-  },
-  {
-    id: "3",
-    name: "ЖК «Современник»",
-    image: "https://images.unsplash.com/photo-1515263487990-61b07816b324?w=800&h=600&fit=crop",
-    minPrice: 3400000,
-    apartments: 234,
-    readiness: "Сдан",
-    address: "пр. Славы, 45",
-  },
-  {
-    id: "4",
-    name: "ЖК «Новая высота»",
-    image: "https://images.unsplash.com/photo-1460317442991-0ec209397118?w=800&h=600&fit=crop",
-    minPrice: 4100000,
-    apartments: 178,
-    readiness: "II кв. 2025",
-    address: "ул. Губкина, 17",
+    type: "Новостройка",
+    buildingName: "ЖК «Современник»",
+    status: "new",
   },
   {
     id: "5",
-    name: "ЖК «Парковый»",
-    image: "https://images.unsplash.com/photo-1567496898669-ee935f5f647a?w=800&h=600&fit=crop",
-    minPrice: 3900000,
-    apartments: 112,
-    readiness: "Сдан",
-    address: "ул. Садовая, 23",
+    title: "1-комнатная квартира",
+    price: 3200000,
+    image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=800&h=800&fit=crop",
+    area: 42,
+    rooms: 1,
+    floor: 7,
+    address: "ул. Губкина, 17, Северный район",
+    type: "Новостройка",
+    buildingName: "ЖК «Новая высота»",
+    status: "new",
+  },
+  {
+    id: "6",
+    title: "2-комнатная квартира",
+    price: 5100000,
+    image: "https://images.unsplash.com/photo-1560185127-6ed189bf02f4?w=800&h=800&fit=crop",
+    area: 68,
+    rooms: 2,
+    floor: 14,
+    address: "ул. Садовая, 23, Западный район",
+    type: "Вторичка",
+    status: "verified",
+  },
+  {
+    id: "7",
+    title: "4-комнатная квартира",
+    price: 9800000,
+    image: "https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800&h=800&fit=crop",
+    area: 120,
+    rooms: 4,
+    floor: 18,
+    address: "ул. Центральная, 1",
+    type: "Новостройка",
+    buildingName: "ЖК «Центральный»",
+    status: "new",
+  },
+  {
+    id: "8",
+    title: "3-комнатная квартира",
+    price: 7200000,
+    image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800&h=800&fit=crop",
+    area: 92,
+    rooms: 3,
+    floor: 9,
+    address: "пр. Богдана Хмельницкого, 78",
+    type: "Вторичка",
+    status: "secondary",
+  },
+  {
+    id: "9",
+    title: "1-комнатная квартира",
+    price: 3500000,
+    image: "https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800&h=800&fit=crop",
+    area: 45,
+    rooms: 1,
+    floor: 11,
+    address: "ул. Харьковская, 15",
+    type: "Новостройка",
+    buildingName: "ЖК «Парковый»",
+    status: "new",
+  },
+  {
+    id: "10",
+    title: "2-комнатная квартира",
+    price: 4500000,
+    image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&h=800&fit=crop",
+    area: 58,
+    rooms: 2,
+    floor: 6,
+    address: "ул. Попова, 32, Харьковская гора",
+    type: "Вторичка",
+    status: "verified",
+  },
+  {
+    id: "11",
+    title: "Студия с террасой",
+    price: 3100000,
+    image: "https://images.unsplash.com/photo-1600573472550-8090b5e0745e?w=800&h=800&fit=crop",
+    area: 35,
+    rooms: 1,
+    floor: 3,
+    address: "ул. Костюкова, 44",
+    type: "Новостройка",
+    buildingName: "ЖК «Белый город»",
+    status: "new",
+  },
+  {
+    id: "12",
+    title: "3-комнатная квартира",
+    price: 8500000,
+    image: "https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800&h=800&fit=crop",
+    area: 105,
+    rooms: 3,
+    floor: 16,
+    address: "ул. 5 Августа, 7",
+    type: "Новостройка",
+    buildingName: "ЖК «Империал»",
+    status: "verified",
   },
 ];
 
-type SearchTab = "buy" | "rent" | "daily";
-type FilterType = "all" | "new" | "secondary" | "house" | "commercial";
-
-const searchTabs: { id: SearchTab; label: string }[] = [
-  { id: "buy", label: "Купить" },
-  { id: "rent", label: "Снять" },
-  { id: "daily", label: "Посуточно" },
-];
-
-const quickFilters: { id: FilterType; label: string; icon: React.ElementType }[] = [
-  { id: "new", label: "Новостройки", icon: Sparkles },
-  { id: "secondary", label: "Вторичка", icon: Key },
-  { id: "house", label: "Дома", icon: Home },
-  { id: "commercial", label: "Коммерция", icon: Briefcase },
-  { id: "all", label: "На карте", icon: Map },
-];
-
-const roomFilters = ["Студия", "1", "2", "3", "4+"];
-
 const Index = () => {
   const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<SearchTab>("buy");
-  const [activeFilter, setActiveFilter] = useState<FilterType | null>(null);
-  const [selectedRooms, setSelectedRooms] = useState<string[]>([]);
-  const sliderRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const selectedRegion = localStorage.getItem("selectedRegion");
-    if (!selectedRegion) {
-      navigate("/region-select");
-    }
-  }, [navigate]);
-
-  const handleSearch = () => {
-    const params = new URLSearchParams();
-    if (searchQuery) params.set("search", searchQuery);
-    if (activeFilter) params.set("type", activeFilter);
-    if (selectedRooms.length) params.set("rooms", selectedRooms.join(","));
-    navigate(`/catalog?${params.toString()}`);
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") handleSearch();
-  };
-
-  const toggleRoom = (room: string) => {
-    setSelectedRooms(prev => 
-      prev.includes(room) ? prev.filter(r => r !== room) : [...prev, room]
-    );
-  };
-
-  const scrollSlider = (direction: "left" | "right") => {
-    if (sliderRef.current) {
-      const scrollAmount = 320;
-      sliderRef.current.scrollBy({
-        left: direction === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
 
-      {/* Hero Section */}
-      <section className="pt-8 pb-12 md:pt-12 md:pb-16 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-8 animate-fade-in">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-display font-bold text-dark-blue mb-4 leading-tight">
-              Найдите идеальную{" "}
-              <span className="text-primary">недвижимость</span>
+      {/* Hero Section - Clean, Premium, Viewport-Height Design */}
+      <section className="relative h-[calc(100vh-64px)] min-h-[560px] max-h-[720px] overflow-hidden flex items-center">
+        {/* Background Image */}
+        <img
+          src={heroWinter}
+          alt="Современный жилой район зимой"
+          className="absolute inset-0 w-full h-full object-cover object-center"
+        />
+        
+        {/* Gradient Overlay - Subtle dark, top to bottom */}
+        <div 
+          className="absolute inset-0"
+          style={{ 
+            background: 'linear-gradient(180deg, rgba(15, 23, 42, 0.20) 0%, rgba(15, 23, 42, 0.35) 40%, rgba(15, 23, 42, 0.55) 100%)'
+          }}
+        />
+
+        {/* Hero Content - Centered, tight vertical flow */}
+        <div className="container mx-auto px-4 relative z-10 flex flex-col items-center justify-center h-full -mt-8 md:-mt-12">
+          {/* Text Block - Higher position, clean hierarchy */}
+          <div className="text-center animate-fade-in">
+            {/* Main Heading - Confident, not oversized */}
+            <h1 className="text-[28px] sm:text-[34px] md:text-[42px] lg:text-[48px] font-semibold text-white leading-[1.15] tracking-[-0.02em]">
+              Найдите свою недвижимость
             </h1>
-            <p className="text-base md:text-lg text-muted-foreground">
-              Выберите ЖК, застройщика или адрес для начала поиска
+            
+            {/* Subtitle - Lighter, clear connection to headline, 14px gap */}
+            <p className="mt-3 md:mt-[14px] text-[14px] md:text-[15px] lg:text-[16px] text-white/75 max-w-[420px] mx-auto leading-[1.55] font-normal">
+              Квартиры, дома и коммерция от застройщиков и агентств
             </p>
           </div>
 
-          {/* Search Box */}
-          <div className="max-w-4xl mx-auto animate-fade-in" style={{ animationDelay: "100ms" }}>
-            <div className="lg-search-box">
-              {/* Search Tabs */}
-              <div className="lg-search-tabs">
-                {searchTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`lg-search-tab ${activeTab === tab.id ? "lg-search-tab-active" : ""}`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {/* Search Input */}
-              <div className="p-4">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="flex-1 relative">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground pointer-events-none" />
-                    <input
-                      type="text"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="Метро, район или ЖК..."
-                      className="lg-input-search bg-muted rounded-xl"
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleSearch}
-                    className="lg-btn-primary h-14 px-8 shrink-0"
-                  >
-                    <Search className="w-5 h-5" />
-                    <span>Найти</span>
-                  </Button>
-                </div>
-
-                {/* Room Chips */}
-                <div className="flex flex-wrap gap-2 mt-4">
-                  {roomFilters.map((room) => (
-                    <button
-                      key={room}
-                      onClick={() => toggleRoom(room)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
-                        selectedRooms.includes(room)
-                          ? "bg-primary text-primary-foreground border-primary"
-                          : "bg-card text-foreground border-border hover:border-primary/50"
-                      }`}
-                    >
-                      {room === "Студия" ? room : `${room}-комн.`}
-                    </button>
-                  ))}
-                  <div className="flex-1" />
-                  <button className="text-primary text-sm font-medium hover:underline">
-                    Все фильтры
-                  </button>
-                </div>
-
-                {/* Quick Filters */}
-                <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t border-border">
-                  {quickFilters.map((filter) => (
-                    <button
-                      key={filter.id}
-                      onClick={() => setActiveFilter(activeFilter === filter.id ? null : filter.id)}
-                      className={`lg-tag ${activeFilter === filter.id ? "lg-tag-active" : ""}`}
-                    >
-                      <filter.icon className="w-4 h-4 mr-1.5" />
-                      {filter.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Complexes Slider */}
-      <section className="py-12 bg-background">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h2 className="lg-section-title">Популярные ЖК</h2>
-              <p className="lg-section-subtitle">Лучшие жилые комплексы в вашем регионе</p>
-            </div>
-            <div className="hidden md:flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full border-border hover:border-primary"
-                onClick={() => scrollSlider("left")}
-              >
-                <ChevronLeft className="w-5 h-5" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full border-border hover:border-primary"
-                onClick={() => scrollSlider("right")}
-              >
-                <ChevronRight className="w-5 h-5" />
-              </Button>
-            </div>
-          </div>
-
+          {/* Search Widget - Main focal point, 24px from subtitle */}
           <div 
-            ref={sliderRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide pb-4 -mx-4 px-4 snap-x snap-mandatory"
+            className="w-full max-w-[880px] mt-6 animate-fade-in"
+            style={{ animationDelay: "80ms" }}
           >
-            {popularComplexes.map((complex, index) => (
-              <Link
-                key={complex.id}
-                to={`/complex/${complex.id}`}
-                className="flex-shrink-0 w-[280px] md:w-[300px] snap-start animate-fade-in"
-                style={{ animationDelay: `${index * 50}ms` }}
-              >
-                <div className="lg-card-interactive overflow-hidden group">
-                  <div className="relative aspect-[4/3] overflow-hidden">
-                    <img
-                      src={complex.image}
-                      alt={complex.name}
-                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                    />
-                    <div className="absolute top-3 left-3">
-                      <span className={`lg-chip ${
-                        complex.readiness === "Сдан" ? "lg-chip-success" : ""
-                      }`}>
-                        {complex.readiness}
-                      </span>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-4 pt-10">
-                      <p className="text-white font-display font-bold text-lg">
-                        от {(complex.minPrice / 1000000).toFixed(1)} млн ₽
-                      </p>
-                    </div>
-                  </div>
-                  <div className="p-4">
-                    <h3 className="font-display font-semibold text-foreground group-hover:text-primary transition-colors">
-                      {complex.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5" />
-                      {complex.address}
-                    </p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {complex.apartments} квартир
-                    </p>
-                  </div>
-                </div>
-              </Link>
-            ))}
-            
-            {/* View All Card */}
-            <Link
-              to="/residential-complex"
-              className="flex-shrink-0 w-[280px] md:w-[300px] snap-start"
-            >
-              <div className="h-full bg-muted rounded-xl border border-dashed border-border flex flex-col items-center justify-center p-8 hover:border-primary transition-colors group">
-                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                  <ArrowRight className="w-6 h-6 text-primary" />
-                </div>
-                <p className="font-semibold text-foreground">Все жилые комплексы</p>
-                <p className="text-sm text-muted-foreground mt-1">120+ ЖК в каталоге</p>
-              </div>
-            </Link>
+            <SearchWidget variant="hero" />
           </div>
         </div>
       </section>
 
-      {/* Properties Section */}
-      <section className="lg-section bg-light-bg">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      {/* Minimal spacer */}
+      <div className="h-4 md:h-8 bg-background" />
+
+      {/* Quick Type Selection */}
+      <QuickTypeSelection />
+
+      {/* Popular Complexes */}
+      <PopularComplexes />
+
+      {/* Properties Section - Distinct styling */}
+      <section className="py-10 md:py-14 relative overflow-hidden">
+        {/* Subtle background gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.02] via-transparent to-primary/[0.04]" />
+        
+        <div className="container mx-auto px-4 relative">
+          {/* Header with decorative element */}
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 md:mb-8">
             <div>
-              <h2 className="lg-section-title">Актуальные предложения</h2>
-              <p className="lg-section-subtitle">Подборка лучших объектов недвижимости</p>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-8 h-1 bg-primary rounded-full" />
+                <span className="text-xs font-medium text-primary uppercase tracking-wider">
+                  Горячие предложения
+                </span>
+              </div>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground">
+                Актуальные предложения
+              </h2>
             </div>
-            <Link to="/catalog">
-              <Button className="lg-btn-secondary">
-                Смотреть все
-                <ArrowRight className="w-4 h-4" />
-              </Button>
+            <Link 
+              to="/catalog" 
+              className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary/80 transition-colors group"
+            >
+              Смотреть все
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {/* Grid - 4 cols desktop, 2 tablet, 1 mobile */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
             {mockProperties.map((property, index) => (
               <div
                 key={property.id}
                 className="animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
+                style={{ animationDelay: `${index * 30}ms` }}
               >
-                <PropertyCard property={property} />
+                <PropertyCard property={property} featured={index < 2} />
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="lg-section bg-background">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {[
-              {
-                icon: Building2,
-                value: "1000+",
-                label: "Объектов в базе",
-                description: "Квартиры, дома и коммерция",
-              },
-              {
-                icon: TrendingUp,
-                value: "Лучшие цены",
-                label: "От застройщиков",
-                description: "Выгодные предложения напрямую",
-              },
-              {
-                icon: MapPin,
-                value: "3 региона",
-                label: "Белгород, Краснодар, Ростов",
-                description: "Расширяем географию",
-              },
-            ].map((stat, index) => (
-              <div
-                key={index}
-                className="lg-advantage-card animate-fade-in"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto mb-5">
-                  <stat.icon className="w-7 h-7 text-primary" />
-                </div>
-                <p className="text-2xl md:text-3xl font-display font-bold text-dark-blue mb-1">
-                  {stat.value}
-                </p>
-                <p className="font-medium text-foreground mb-1">{stat.label}</p>
-                <p className="text-sm text-muted-foreground">{stat.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* May Like Section */}
+      <MayLikeSection />
 
-      {/* CTA Section */}
-      <section className="lg-section bg-light-bg">
-        <div className="container mx-auto px-4">
-          <div className="bg-primary rounded-2xl p-8 md:p-12 text-center relative overflow-hidden">
-            {/* Background pattern */}
-            <div className="absolute inset-0 opacity-10">
-              <div className="absolute inset-0" style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-              }} />
-            </div>
-            <div className="relative z-10">
-              <h2 className="text-2xl md:text-4xl font-display font-bold text-primary-foreground mb-4">
-                Начните поиск недвижимости прямо сейчас
-              </h2>
-              <p className="text-primary-foreground/80 mb-8 max-w-2xl mx-auto text-base md:text-lg">
-                Зарегистрируйтесь, чтобы сохранять избранное, сравнивать объекты и получать уведомления о новых предложениях.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button className="bg-card text-primary hover:bg-card/90 font-semibold px-8 py-3 h-auto rounded-lg transition-all duration-200 shadow-elevated">
-                  Зарегистрироваться
-                </Button>
-                <Link to="/catalog">
-                  <Button 
-                    variant="ghost" 
-                    className="text-primary-foreground hover:bg-primary-foreground/10 font-medium px-8 py-3 h-auto rounded-lg border border-primary-foreground/30"
-                  >
-                    Перейти в каталог
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Sales Starts 2025 */}
+      <SalesStarts />
+
+      {/* Stats Block */}
+      <StatsBlock />
+
+      {/* News Section */}
+      <NewsSlider />
+
+      {/* Map Section */}
+      <HomeMapSection />
+
+      {/* CTA - Sell Your Property */}
+      <CTASocialBlock />
 
       <Footer />
     </div>

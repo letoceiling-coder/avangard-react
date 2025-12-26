@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { Mail, Lock, User, ArrowRight, Eye, EyeOff } from "lucide-react";
 
 const Auth = () => {
@@ -162,7 +163,24 @@ const Auth = () => {
 
               {isLogin && (
                 <div className="text-right">
-                  <button type="button" className="text-sm text-primary hover:underline">
+                  <button 
+                    type="button" 
+                    onClick={async () => {
+                      if (!email) {
+                        toast.error("Введите email для восстановления пароля");
+                        return;
+                      }
+                      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: `${window.location.origin}/auth`,
+                      });
+                      if (error) {
+                        toast.error("Ошибка отправки письма");
+                      } else {
+                        toast.success("Инструкции по восстановлению отправлены на email");
+                      }
+                    }}
+                    className="text-sm text-primary hover:underline"
+                  >
                     Забыли пароль?
                   </button>
                 </div>
