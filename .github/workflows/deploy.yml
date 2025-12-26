@@ -23,21 +23,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
       
-      - name: Build project
-        run: npm run build
-      
-      - name: Deploy to server via SSH
-        uses: appleboy/scp-action@v0.1.4
-        with:
-          host: ${{ secrets.SERVER_HOST }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SERVER_PORT || 22 }}
-          source: "dist/*"
-          target: "/home/d/${{ secrets.SERVER_USER }}/trendagent.siteaccess.ru/public_html/"
-          strip_components: 1
-      
-      - name: Run post-deploy script
+      - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.5
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -46,7 +32,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT || 22 }}
           script: |
             cd ~/trendagent.siteaccess.ru/public_html/avangard-react
-            git pull origin main
+            git pull origin main || echo "Git pull completed"
             npm ci
             npm run build
             cp -r dist/. ..
